@@ -35,7 +35,10 @@ public class RobotContainer
   final         CommandXboxController driverXbox = new CommandXboxController(0);
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                                                                                "swerve/neo"));
+                                                                                "swerve"));
+                                                                                
+  private boolean slowMode = false;
+
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -46,6 +49,18 @@ public class RobotContainer
                                                             .withControllerRotationAxis(driverXbox::getRightX)
                                                             .deadband(OperatorConstants.DEADBAND)
                                                             .scaleTranslation(0.8)
+                                                            .allianceRelativeControl(true);
+
+                                                            
+  /**
+   * SLow mode 
+   */
+    SwerveInputStream driveAngularVelocitySlow = SwerveInputStream.of(drivebase.getSwerveDrive(),
+                                                                () -> driverXbox.getLeftY() * -1,
+                                                                () -> driverXbox.getLeftX() * -1)
+                                                            .withControllerRotationAxis(driverXbox::getRightX)
+                                                            .deadband(OperatorConstants.DEADBAND)
+                                                            .scaleTranslation(0.3)
                                                             .allianceRelativeControl(true);
 
   /**
@@ -90,6 +105,35 @@ public class RobotContainer
                                                                                .translationHeadingOffset(Rotation2d.fromDegrees(
                                                                                    0));
 
+  SwerveInputStream driveAngularVelocityKeyboardSlow = SwerveInputStream.of(drivebase.getSwerveDrive(),
+                                                                        () -> -driverXbox.getLeftY(),
+                                                                        () -> -driverXbox.getLeftX())
+                                                                    .withControllerRotationAxis(() -> driverXbox.getRawAxis(
+                                                                        2))
+                                                                    .deadband(OperatorConstants.DEADBAND)
+                                                                    .scaleTranslation(0.3)
+                                                                    .allianceRelativeControl(true);
+  // Derive the heading axis with math!
+  SwerveInputStream driveDirectAngleKeyboard     = driveAngularVelocityKeyboard.copy()
+                                                                               .withControllerHeadingAxis(() ->
+                                                                                                              Math.sin(
+                                                                                                                  driverXbox.getRawAxis(
+                                                                                                                      2) *
+                                                                                                                  Math.PI) *
+                                                                                                              (Math.PI *
+                                                                                                               2),
+                                                                                                          () ->
+                                                                                                              Math.cos(
+                                                                                                                  driverXbox.getRawAxis(
+                                                                                                                      2) *
+                                                                                                                  Math.PI) *
+                                                                                                              (Math.PI *
+                                                                                                               2))
+                                                                               .headingWhile(true)
+                                                                               .translationHeadingOffset(true)
+                                                                               .translationHeadingOffset(Rotation2d.fromDegrees(
+                                                                                   0));
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -110,23 +154,22 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    Command driveFieldOrientedDirectAngle      = drivebase.driveFieldOriented(driveDirectAngle);
-    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
-    Command driveRobotOrientedAngularVelocity  = drivebase.driveFieldOriented(driveRobotOriented);
-    Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(
-        driveDirectAngle);
     Command driveFieldOrientedDirectAngleKeyboard      = drivebase.driveFieldOriented(driveDirectAngleKeyboard);
-    Command driveFieldOrientedAnglularVelocityKeyboard = drivebase.driveFieldOriented(driveAngularVelocityKeyboard);
-    Command driveSetpointGenKeyboard = drivebase.driveWithSetpointGeneratorFieldRelative(
-        driveDirectAngleKeyboard);
+    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
+    Command driveFieldORientedAngularVelocitySlow = drivebase.driveFieldOriented(driveAngularVelocitySlow);
+    Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngle);
+    
+
 
     if (RobotBase.isSimulation())
     {
       drivebase.setDefaultCommand(driveFieldOrientedDirectAngleKeyboard);
-    } else
+    } 
+    else
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     }
+
 
     if (Robot.isSimulation())
     {
