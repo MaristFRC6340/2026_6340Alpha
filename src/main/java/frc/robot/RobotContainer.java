@@ -158,15 +158,26 @@ public class RobotContainer
     Command driveFieldOrientedDirectAngleKeyboard      = drivebase.driveFieldOriented(driveDirectAngleKeyboard);
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
     Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngle);
+    
 
-    // enables slow mode
-    driverRTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow));
-    // driverRTrigger.onTrue(new InstantCommand(() -> {
-    //   rotationSpeed = 0.8;
-    // })).onFalse(
-    //   new InstantCommand(() -> {
-    //     rotationSpeed = 0.3;
-    //   }));
+
+    if (RobotBase.isSimulation() && !slowMode)
+    {
+      drivebase.setDefaultCommand(driveFieldOrientedDirectAngleKeyboard);
+    } 
+    if (RobotBase.isSimulation() && slowMode)
+    {
+      drivebase.setDefaultCommand(driveFieldOrientedDirectAngleKeyboardSlow);
+    }
+    else if (!slowMode)
+    {
+      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+    }
+    else if (slowMode)
+    {
+      drivebase.setDefaultCommand(driveFieldOrientedAngularVelocitySlow);
+    }
+
 
     if (Robot.isSimulation())
     {
@@ -188,12 +199,17 @@ public class RobotContainer
       driverXbox.button(1).whileTrue(drivebase.sysIdDriveMotorCommand());
       driverXbox.button(2).whileTrue(Commands.runEnd(() -> driveDirectAngleKeyboard.driveToPoseEnabled(true),
                                                      () -> driveDirectAngleKeyboard.driveToPoseEnabled(false)));
-
-//      driverXbox.b().whileTrue(
-//          drivebase.driveToPose(
-//              new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
-//                              );
-
+      
+      boolean toggle = false;
+      if (driverXbox.getRightTriggerAxis() > 0.5 && toggle == false)
+      {
+        slowMode = !slowMode;
+        toggle = true;
+      }
+      if (driverXbox.getRightTriggerAxis() < 0.5 && toggle == true)
+      {
+        toggle = false;
+      }
     }
     if (DriverStation.isTest())
     {
