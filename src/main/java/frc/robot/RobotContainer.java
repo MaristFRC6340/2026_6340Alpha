@@ -203,6 +203,8 @@ public class RobotContainer
       driverXbox.rightBumper().onTrue(Commands.none());
     }
 
+    drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity));
+
   }
 
   /**
