@@ -87,7 +87,7 @@ public class Vision
 
     if (Robot.isSimulation())
     {
-      visionSim = new VisionSystemSim("Vision");
+      visionSim = new VisionSystemSim("Arducam_B0495_(USB3_2.3MP)");
       visionSim.addAprilTags(fieldLayout);
 
       for (Cameras c : Cameras.values())

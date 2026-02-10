@@ -17,6 +17,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,6 +30,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -77,6 +80,10 @@ public class SwerveSubsystem extends SubsystemBase
   private final DoubleLogEntry poseY = new DoubleLogEntry(DataLogManager.getLog(), "/swerve/pose/y");
   private final DoubleLogEntry poseRot = new DoubleLogEntry(DataLogManager.getLog(), "/swerve/pose/rotation");
 
+  // future vision endeavors :)
+  private PIDController xController = new PIDController(Constants.SwerveConstants.kPX,0,0);
+  private PIDController yController = new PIDController(Constants.SwerveConstants.kPY,0,0);
+  private PIDController thetaController = new PIDController(Constants.SwerveConstants.kPTheta,0,0);
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
@@ -746,4 +753,5 @@ public class SwerveSubsystem extends SubsystemBase
   {
     return swerveDrive;
   }
+
 }

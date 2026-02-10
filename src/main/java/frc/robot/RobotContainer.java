@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -45,6 +46,8 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve"));
+  
+  private final TurretSubsystem turretSubsystem = new TurretSubsystem();
 
   private Trigger driverA = driverXbox.a();
   private Trigger driverB = driverXbox.b();
@@ -162,7 +165,14 @@ public class RobotContainer
 
     // Slow Mode Fix Temporary - Right Trigger Makes the Robot Drive Slow - michaudc
     driverRTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow));
+
+    // X: Bump align (Driver)
+    // driverX.onTrue(new InstantCommand(() -> ));
     
+    // debug
+    driverDpadUp.onTrue(new InstantCommand(() -> turretSubsystem.getSetPositionCommand(0.5)));
+    driverDpadRight.whileTrue(turretSubsystem.shootCommand());
+  
     if (Robot.isSimulation())
     {
       Pose2d target = new Pose2d(new Translation2d(1, 4),
@@ -195,6 +205,7 @@ public class RobotContainer
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
       driverXbox.leftBumper().onTrue(Commands.none());
       driverXbox.rightBumper().onTrue(Commands.none());
+      
     } else
     {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
