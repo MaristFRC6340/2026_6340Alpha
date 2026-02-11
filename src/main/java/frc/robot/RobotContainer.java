@@ -22,10 +22,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -41,13 +44,19 @@ import swervelib.SwerveInputStream;
 public class RobotContainer
 {
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  final         CommandXboxController driverXbox = new CommandXboxController(0);
+  // Driver Controller init
+  final CommandXboxController driverXbox = new CommandXboxController(0);
+
+  // Operator Controller init
+  final CommandPS4Controller driverPS4 = new CommandPS4Controller(0);
+
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve"));
   
   private final TurretSubsystem turretSubsystem = new TurretSubsystem();
+
+  private final VisionSubsystem visionSubsystem = new VisionSubsystem();
 
   private Trigger driverA = driverXbox.a();
   private Trigger driverB = driverXbox.b();
@@ -65,6 +74,24 @@ public class RobotContainer
   private Trigger driverDpadRight = driverXbox.povRight();
   private Trigger driverDpadDown = driverXbox.povDown();
   private Trigger driverDpadLeft = driverXbox.povLeft();
+
+  private Trigger operatorA = driverPS4.cross();
+  private Trigger operatorB = driverPS4.circle();
+  private Trigger operatorX = driverPS4.square();
+  private Trigger operatorY = driverPS4.triangle();
+  private Trigger operatorL = driverPS4.L1();
+  private Trigger operatorR = driverPS4.R1();
+  private Trigger operatorStart = driverPS4.options();
+  private Trigger operatorLTrigger = driverPS4.axisGreaterThan(3,.05);
+  private Trigger operatorRTrigger = driverPS4.axisGreaterThan(4,.05);
+  private Trigger operatorLStick = new Trigger(() -> Math.abs(driverPS4.getLeftY()) > .05);
+  private Trigger operatorRStick = new Trigger(() -> Math.abs(driverPS4.getRightY()) > .05);
+  private Trigger operatorDpadUp = driverPS4.povUp();
+  private Trigger operatorDpadRight = driverPS4.povRight();
+  private Trigger operatorDpadDown = driverPS4.povDown();
+  private Trigger operatorDpadLeft = driverPS4.povLeft();
+  // private Trigger operatorBack = driverPS4.create();
+
 
   private double rotationSpeed = 0.8;
 
@@ -170,8 +197,16 @@ public class RobotContainer
     // driverX.onTrue(new InstantCommand(() -> ));
     
     // debug
-    driverDpadUp.onTrue(new InstantCommand(() -> turretSubsystem.getSetPositionCommand(0.5)));
-    driverDpadRight.whileTrue(turretSubsystem.shootCommand());
+    // driverDpadUp.onTrue(new InstantCommand(() -> turretSubsystem.getSetPositionCommand(0.01)));
+    // driverX.whileTrue(new InstantCommand(() -> turretSubsystem.getSetTransferSpeed(0.25)));
+    driverX.whileTrue(new InstantCommand(() -> turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed)
+    .withTimeout(1)
+    .andThen(turretSubsystem.getSetTransferCommand(0.5))));
+    // .andThen(turretSubsystem.getSetTransferCommand(0.5)));
+    // driverX.whileTrue(Commands.waitUntil(() -> turretSubsystem.isFlywheelRunning()).withTimeout(0.5)
+    // .andThen(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed)));
+    driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
+    driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
   
     if (Robot.isSimulation())
     {

@@ -64,7 +64,11 @@ public final class Constants
 
   public static class TurretConstants {
 
+    public static final int kTransferMotorID = 30;
     public static final int kRotationMotorID = 31;
+    public static final int kHoodMotorID = 32;
+    public static final int kFlywheelMotorID = 33;
+    public static final int kVectorMotorID = 34;
 
     private static final Slot0Configs kSlot0Configs = new Slot0Configs()
     .withKA(0)
@@ -75,10 +79,18 @@ public final class Constants
     .withKI(0)
     .withKD(0);
 
+     public static final TalonFXConfiguration kTransferConfig = new TalonFXConfiguration()
+    .withSlot0(kSlot0Configs);
     public static final TalonFXConfiguration kRotationConfig = new TalonFXConfiguration()
     .withSlot0(kSlot0Configs);
+     public static final TalonFXConfiguration kHoodConfig = new TalonFXConfiguration()
+    .withSlot0(kSlot0Configs);
+     public static final TalonFXConfiguration kFlywheelConfig = new TalonFXConfiguration()
+    .withSlot0(kSlot0Configs);
+     public static final TalonFXConfiguration kVectorConfig = new TalonFXConfiguration()
+    .withSlot0(kSlot0Configs);
 
-    public static final double flywheelSpeed = 0.5;
+    public static final double flywheelSpeed = -0.75;
 
   }
 
