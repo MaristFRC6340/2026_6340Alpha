@@ -207,7 +207,12 @@ public class RobotContainer
     // .andThen(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed)));
     driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
     driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
-  
+    driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
+
+    driverRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
+    driverLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());  
+
+
     if (Robot.isSimulation())
     {
       Pose2d target = new Pose2d(new Translation2d(1, 4),

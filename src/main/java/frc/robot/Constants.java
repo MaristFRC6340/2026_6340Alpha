@@ -91,6 +91,12 @@ public final class Constants
     .withSlot0(kSlot0Configs);
 
     public static final double flywheelSpeed = -0.75;
+    public static final double transferSpeed = 0.75;
+
+    public static final double HOOD_ANGLE_RATIO = -15.0 / 90.0; // Converting angle inputs to Encoder Counts
+    public static final double ZERO_ANGLE = 0;
+    public static final double NEAR_ANGLE = 30; // Degrees
+    public static final double FAR_ANGLE = 60; // Degrees
 
   }
 
