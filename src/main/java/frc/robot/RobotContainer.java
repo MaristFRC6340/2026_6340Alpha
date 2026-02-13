@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -48,7 +49,7 @@ public class RobotContainer
   final CommandXboxController driverXbox = new CommandXboxController(0);
 
   // Operator Controller init
-  final CommandPS4Controller driverPS4 = new CommandPS4Controller(0);
+  final CommandPS4Controller driverPS4 = new CommandPS4Controller(1);
 
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
@@ -75,10 +76,10 @@ public class RobotContainer
   private Trigger driverDpadDown = driverXbox.povDown();
   private Trigger driverDpadLeft = driverXbox.povLeft();
 
-  private Trigger operatorA = driverPS4.cross();
-  private Trigger operatorB = driverPS4.circle();
-  private Trigger operatorX = driverPS4.square();
-  private Trigger operatorY = driverPS4.triangle();
+  private Trigger operatorCross = driverPS4.cross();
+  private Trigger operatorCircle = driverPS4.circle();
+  private Trigger operatorSquare = driverPS4.square();
+  private Trigger operatorTriangle = driverPS4.triangle();
   private Trigger operatorL = driverPS4.L1();
   private Trigger operatorR = driverPS4.R1();
   private Trigger operatorStart = driverPS4.options();
@@ -175,6 +176,8 @@ public class RobotContainer
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
     NamedCommands.registerCommand("test", Commands.print("I EXIST"));
+
+    // SmartDashboard.putNumber("Raw Y Axis", 0);
   }
 
   /**
@@ -210,7 +213,16 @@ public class RobotContainer
     driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
 
     driverRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
-    driverLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());  
+    driverLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());
+
+    driverDpadUp.whileTrue(turretSubsystem.aimTurretCommand());
+    driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
+
+    // operator commands
+    // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.setHoodAngle(-driverPS4.getRightY()*90.0)));
+    // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(-driverPS4.getRightY())));
+    // operatorTriangle.whileTrue(Commands.runOnce(() -> turretSubsystem.changeHoodAnglePos(TurretConstants.hood_snap)));
+    // operatorCircle.whileTrue(Commands.runOnce(() -> turretSubsystem.changeHoodAnglePos(-TurretConstants.hood_snap)));
 
 
     if (Robot.isSimulation())
@@ -257,7 +269,6 @@ public class RobotContainer
     }
 
     drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity));
-
   }
 
   /**
@@ -279,5 +290,9 @@ public class RobotContainer
 
   public void onTeleopInit() {
     drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity));
+  }
+
+  public void periodic() {
+    SmartDashboard.putNumber("Raw Y Axis", -driverPS4.getRightY());
   }
 }

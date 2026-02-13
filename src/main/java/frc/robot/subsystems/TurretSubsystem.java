@@ -3,12 +3,16 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,13 +36,21 @@ public class TurretSubsystem extends SubsystemBase {
    private final PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
    
 
+   private final double kP = 0.005;
+   private double turnPower = 0;
+
+   private NetworkTable photonTable;
+  private NetworkTableEntry targetYaw;
+
+
+
 
     //Vision vision = new Vision();
     public TurretSubsystem() {
         // axis 1: full body rotation
-        // rotationMotor = new TalonFX(Constants.TurretConstants.kRotationMotorID);//CAN Ids fixed once figured out
-        // rotationMotor.getConfigurator().apply(Constants.TurretConstants.kRotationConfig);
-        // rotationMotor.setNeutralMode(NeutralModeValue.Brake);
+        rotationMotor = new TalonFX(Constants.TurretConstants.kRotationMotorID);//CAN Ids fixed once figured out
+        //rotationMotor.getConfigurator().apply(Constants.TurretConstants.kRotationConfig);
+        rotationMotor.setNeutralMode(NeutralModeValue.Coast);
         
         // axis 2: hood
         hoodMotor = new TalonFX(Constants.TurretConstants.kHoodMotorID);
@@ -65,11 +77,19 @@ public class TurretSubsystem extends SubsystemBase {
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
 
+        // rotationMotor.getConfigurator().apply(slot0Configs);
         hoodMotor.getConfigurator().apply(slot0Configs);
 
         // Smart Dashboard Values
         SmartDashboard.putNumber("Hood Position", 0);
         SmartDashboard.putNumber("Hood Angle", 0);
+        SmartDashboard.putNumber("Rotational Position", 0);
+        SmartDashboard.putNumber("Rotation Angle", 0);
+
+        SmartDashboard.putNumber("turnPower", 0);
+
+        photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
+        targetYaw = photonTable.getEntry("turretcamera/targetYaw");
 
         
     }
@@ -84,11 +104,26 @@ public class TurretSubsystem extends SubsystemBase {
         //double yaw = SmartDashboard.getNumber("Yaw", 0);
         //System.out.println(yaw);
 
+        // Display values from turret's rotational position
+        double turretPos = rotationMotor.getPosition().getValue().magnitude();
+        SmartDashboard.putNumber("Rotational Position", turretPos);
+        SmartDashboard.putNumber("Rotation Angle", turretPos);
         // Display Values from Hood Position
         double hoodPos = hoodMotor.getPosition().getValue().magnitude();
         SmartDashboard.putNumber("Hood Position", hoodPos);
         SmartDashboard.putNumber("Hood Angle", hoodPos / TurretConstants.HOOD_ANGLE_RATIO);
 
+        
+
+        
+
+        
+
+    }
+
+
+    public void setTurretPosition(double pos) {
+        rotationMotor.setControl(m_request.withPosition(pos));
     }
 
     public void setFlywheelSpeed(double speed) {
@@ -100,9 +135,9 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     // resets encoder
-//     public void resetRotationEncoder() {
-//         rotationMotor.setPosition(0);
-//     }
+    public void resetRotationEncoder() {
+        rotationMotor.setPosition(0);
+    }
 
     // positive value
     public void setTransferMotorSpeed(double speed){
@@ -111,6 +146,28 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void setHoodAngle(double pos) {
         hoodMotor.setControl(m_request.withPosition(pos * TurretConstants.HOOD_ANGLE_RATIO));
+    }
+
+    public void changeHoodAngle(double amt) { // amt is a multiplier
+        double currentPos = hoodMotor.getPosition().getValue().magnitude(); // in degrees
+        double updatedPos = currentPos + (amt);
+        if (updatedPos > 80) updatedPos = 80;
+        if (updatedPos < 0) updatedPos = 0;
+        setHoodAngle(updatedPos);
+    }
+
+    public void setTurretSpeed() {
+        double yaw = targetYaw.getDouble(0); // Get Yaw
+        turnPower = -kP * yaw;
+        if (turnPower > 0.1) {
+            turnPower = 0.1;
+        }
+        if (turnPower < -0.1) {
+            turnPower = -0.1;
+        }
+        rotationMotor.set(turnPower);
+        SmartDashboard.putNumber("turnPower", turnPower);
+        //System.out.println(turnPower);
     }
 
     /* COMMANDS */
@@ -144,6 +201,8 @@ public class TurretSubsystem extends SubsystemBase {
             setTransferMotorSpeed(0);
         });
      }
+
+
     // public Command getSetPositionCommand(double position) {
     //    //sets rotational position of turret
     //     return this.runOnce(() -> {
@@ -159,6 +218,14 @@ public class TurretSubsystem extends SubsystemBase {
      public Command getSetHoodAngleLow(){
        //Sets hood angle position on operator input
        return Commands.run(() -> this.setHoodAngle(TurretConstants.ZERO_ANGLE)); // Now by Positive Angle
+    }
+
+    public Command setHoodAnglePos(double angle) {
+        return Commands.run(() -> this.setHoodAngle(angle));
+    }
+
+    public Command changeHoodAnglePos(double amt) {
+        return Commands.run(() -> this.changeHoodAngle(amt));
     }
 
     
@@ -177,6 +244,23 @@ public class TurretSubsystem extends SubsystemBase {
       });
    }
 
+   public Command aimTurretCommand() {
+
+      if (turnPower > 0.1) {
+        turnPower = 0.1;
+      }
+      if (turnPower < -0.1) {
+        turnPower = -0.1;
+      }
+
+       return Commands.run(  () -> this.setTurretSpeed());
+
+      //return this.run(() -> this.rotationMotor.set(turnPower));
+   }
+
+   public Command stopTurretCommand() {
+        return this.run(() -> this.rotationMotor.set(0));
+   }
 
 //    public Command autoStartLauncher(){
 //       //Starts Launcher

@@ -97,6 +97,7 @@ public final class Constants
     public static final double ZERO_ANGLE = 0;
     public static final double NEAR_ANGLE = 30; // Degrees
     public static final double FAR_ANGLE = 60; // Degrees
+    public static final double hood_snap = 10; // Degrees
 
   }
 
