@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -34,9 +35,10 @@ public class TurretSubsystem extends SubsystemBase {
    private final MotionMagicExpoVoltage rot_MMEV = new MotionMagicExpoVoltage(0);
 
    private final PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
-   
 
-   private final double kP = 0.005;
+   private final VelocityVoltage flywheel_request = new VelocityVoltage(0).withSlot(0);
+
+   private final double kP = 0.02;
    private double turnPower = 0;
 
    private NetworkTable photonTable;
@@ -45,10 +47,12 @@ public class TurretSubsystem extends SubsystemBase {
 
 
 
+
+
     //Vision vision = new Vision();
     public TurretSubsystem() {
         // axis 1: full body rotation
-        rotationMotor = new TalonFX(Constants.TurretConstants.kRotationMotorID);//CAN Ids fixed once figured out
+        rotationMotor = new TalonFX(Constants.TurretConstants.kRotationMotorID);
         //rotationMotor.getConfigurator().apply(Constants.TurretConstants.kRotationConfig);
         rotationMotor.setNeutralMode(NeutralModeValue.Coast);
         
@@ -80,6 +84,15 @@ public class TurretSubsystem extends SubsystemBase {
         // rotationMotor.getConfigurator().apply(slot0Configs);
         hoodMotor.getConfigurator().apply(slot0Configs);
 
+        var slot0ConfigsFlywheel = new Slot0Configs();
+        slot0ConfigsFlywheel.kS = 0.1;
+        slot0ConfigsFlywheel.kV = 0.12;
+        slot0ConfigsFlywheel.kP = 0.11;
+        slot0ConfigsFlywheel.kI = 0;
+        slot0ConfigsFlywheel.kD = 0;
+
+        flywheelMotor.getConfigurator().apply(slot0ConfigsFlywheel);
+
         // Smart Dashboard Values
         SmartDashboard.putNumber("Hood Position", 0);
         SmartDashboard.putNumber("Hood Angle", 0);
@@ -87,6 +100,8 @@ public class TurretSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Rotation Angle", 0);
 
         SmartDashboard.putNumber("turnPower", 0);
+
+        SmartDashboard.putNumber("Shooter Velocity", 0);
 
         photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
         targetYaw = photonTable.getEntry("turretcamera/targetYaw");
@@ -113,8 +128,8 @@ public class TurretSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Hood Position", hoodPos);
         SmartDashboard.putNumber("Hood Angle", hoodPos / TurretConstants.HOOD_ANGLE_RATIO);
 
-        
-
+        double shooterVelocity = flywheelMotor.getVelocity().getValueAsDouble()*60;
+        SmartDashboard.putNumber("Shooter Velocity", shooterVelocity);
         
 
         
@@ -128,6 +143,10 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void setFlywheelSpeed(double speed) {
         flywheelMotor.set(speed);
+    }
+
+    public void setFlywheelVelocity(double velocity){
+        flywheelMotor.setControl(flywheel_request.withVelocity(velocity).withFeedForward(0.5));
     }
 
     public boolean isFlywheelRunning() {
@@ -156,14 +175,14 @@ public class TurretSubsystem extends SubsystemBase {
         setHoodAngle(updatedPos);
     }
 
-    public void setTurretSpeed() {
+    public void setTurretSpeed() { //Aim to Camera
         double yaw = targetYaw.getDouble(0); // Get Yaw
         turnPower = -kP * yaw;
-        if (turnPower > 0.1) {
-            turnPower = 0.1;
+        if (turnPower > 0.3) {
+            turnPower = 0.3;
         }
-        if (turnPower < -0.1) {
-            turnPower = -0.1;
+        if (turnPower < -0.3) {
+            turnPower = -0.3;
         }
         rotationMotor.set(turnPower);
         SmartDashboard.putNumber("turnPower", turnPower);
@@ -202,6 +221,16 @@ public class TurretSubsystem extends SubsystemBase {
         });
      }
 
+     public Command shootWhileHeldVelocity(double flywheelVelocity, double transferSpeed){
+        return Commands.sequence(
+            this.runOnce(() -> { setFlywheelVelocity(flywheelVelocity); }),
+            Commands.waitSeconds(1),
+            this.run(() -> { setTransferMotorSpeed(transferSpeed); })
+        ).finallyDo(interrupted -> {
+            setFlywheelSpeed(0);
+            setTransferMotorSpeed(0);
+        });
+     }
 
     // public Command getSetPositionCommand(double position) {
     //    //sets rotational position of turret
@@ -245,13 +274,6 @@ public class TurretSubsystem extends SubsystemBase {
    }
 
    public Command aimTurretCommand() {
-
-      if (turnPower > 0.1) {
-        turnPower = 0.1;
-      }
-      if (turnPower < -0.1) {
-        turnPower = -0.1;
-      }
 
        return Commands.run(  () -> this.setTurretSpeed());
 

@@ -211,6 +211,7 @@ public class RobotContainer
     driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
     driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
     driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
+    //riverA.whileTrue(turretSubsystem.shootWhileHeldVelocity(1000, TurretConstants.transferSpeed));
 
     driverRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
     driverLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());
