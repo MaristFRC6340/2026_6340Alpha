@@ -39,6 +39,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     // Establish SmartDashboard Value
     SmartDashboard.putNumber("Yaw", 0);
+    SmartDashboard.putNumber("Test Yaw", 0);
 
     // Bind to Network Table
     photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
@@ -52,7 +53,7 @@ public class VisionSubsystem extends SubsystemBase {
     // Read Data from Camera
     // Maybe put on Advantage Scope
 
-    /* 
+    /*       
     PhotonPipelineResult result = camera.getLatestResult();
 
     if (result.hasTargets()) {
@@ -65,20 +66,26 @@ public class VisionSubsystem extends SubsystemBase {
 
       if (target != null) {
         // Get Yaw
-        yaw = target.getYaw();
+        //yaw = target.getYaw();
+        double testYaw = target.getYaw();
+        SmartDashboard.putNumber("Test Yaw", testYaw);
+
       }
       
 
       //System.out.println(target.getFiducialId());
 
+      
+
     }
-      */
+      
 
       double yaw = targetYaw.getDouble(0);
 
       SmartDashboard.putNumber("Yaw", yaw);
       //SmartDashboard.putNumber("optimal ID", target.getFiducialId());
 
+      */
   
 
 }

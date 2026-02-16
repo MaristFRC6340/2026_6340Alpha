@@ -64,6 +64,11 @@ public class TurretSubsystem extends SubsystemBase {
         flywheelMotor = new TalonFX(Constants.TurretConstants.kFlywheelMotorID); //This is supposed to be 
         flywheelMotor.getConfigurator().apply(Constants.TurretConstants.kFlywheelConfig);
         flywheelMotor.setNeutralMode(NeutralModeValue.Coast);
+      
+        //Reverse direction of the flywheel 
+        MotorOutputConfigs flywheelConfigs = new MotorOutputConfigs();
+        flywheelConfigs.Inverted=InvertedValue.Clockwise_Positive;
+        flywheelMotor.getConfigurator().apply(flywheelConfigs);
 
         transferMotor = new TalonFX(Constants.TurretConstants.kTransferMotorID);
         transferMotor.getConfigurator().apply(Constants.TurretConstants.kTransferConfig);
@@ -90,6 +95,7 @@ public class TurretSubsystem extends SubsystemBase {
         slot0ConfigsFlywheel.kP = 0.11;
         slot0ConfigsFlywheel.kI = 0;
         slot0ConfigsFlywheel.kD = 0;
+        
 
         flywheelMotor.getConfigurator().apply(slot0ConfigsFlywheel);
 

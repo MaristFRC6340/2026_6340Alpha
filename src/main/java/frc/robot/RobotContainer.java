@@ -210,8 +210,8 @@ public class RobotContainer
     // .andThen(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed)));
     driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
     driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
-    driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
-    //riverA.whileTrue(turretSubsystem.shootWhileHeldVelocity(1000, TurretConstants.transferSpeed));
+   // driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
+    driverA.whileTrue(turretSubsystem.shootWhileHeldVelocity(50, TurretConstants.transferSpeed));
 
     driverRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
     driverLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());
