@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import java.util.List;
 import java.util.Optional;
 
+import org.opencv.dnn.Net;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -31,6 +32,8 @@ public class VisionSubsystem extends SubsystemBase {
   // Access Network Table
   private NetworkTable photonTable;
   private NetworkTableEntry targetYaw;
+  private NetworkTableEntry targetPitch;
+  private NetworkTableEntry pipeline;
   
 
   /** Creates a new Vision. */
@@ -40,21 +43,34 @@ public class VisionSubsystem extends SubsystemBase {
     // Establish SmartDashboard Value
     SmartDashboard.putNumber("Yaw", 0);
     SmartDashboard.putNumber("Test Yaw", 0);
-
+    SmartDashboard.putNumber("Test Pitch", 0);
+    SmartDashboard.putNumber("PipelineIndex", -1);
     // Bind to Network Table
     photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
     targetYaw = photonTable.getEntry("turretcamera/targetYaw");
+    targetPitch = photonTable.getEntry("turretcamera/targetPitch");
+    pipeline = photonTable.getEntry("turretcamera/pipelineIndexState");
+    
+    if (pipeline.getDouble(-1) < 1) {
+       pipeline.setInteger(1);
+    }
+    else {
+      pipeline.setInteger(0);
+    }
+
 
   }
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     // Read Data from Camera
     // Maybe put on Advantage Scope
 
-    /*       
+           
     PhotonPipelineResult result = camera.getLatestResult();
+
+    int pipelineIndex = (int)pipeline.getInteger(-1);
+    SmartDashboard.putNumber("PipelineIndex", pipelineIndex);
 
     if (result.hasTargets()) {
 
@@ -69,7 +85,9 @@ public class VisionSubsystem extends SubsystemBase {
         //yaw = target.getYaw();
         double testYaw = target.getYaw();
         SmartDashboard.putNumber("Test Yaw", testYaw);
-
+        // Get Pitch
+        double testPitch = target.getPitch();
+        SmartDashboard.putNumber("Test Pitch", testPitch);
       }
       
 
@@ -84,9 +102,6 @@ public class VisionSubsystem extends SubsystemBase {
 
       SmartDashboard.putNumber("Yaw", yaw);
       //SmartDashboard.putNumber("optimal ID", target.getFiducialId());
-
-      */
-  
 
 }
 

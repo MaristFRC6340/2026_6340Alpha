@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.math.Matrix;
@@ -15,6 +16,7 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import swervelib.math.Matter;
 
 /**
@@ -62,6 +64,24 @@ public final class Constants
     public static final double SPEED_CONTROL = 0.5;
   }
 
+  public static class IntakeConstants {
+    public static final int kPivotMotorID = 40;
+    public static final int kRollerMotorID = 41;
+
+    public static final double PIVOT_ANGLE_RATIO = -11.559570 / 90.0; // 11.5 rotations to go 90 degrees
+
+    private static final Slot0Configs kSlot0Configs = new Slot0Configs()
+    .withKA(0)
+    .withKG(.3)
+    .withKS(.0)
+    .withKV(0)
+    .withKP(0.001)
+    .withKI(0)
+    .withKD(0);
+
+    public static TalonFXConfiguration kPivotConfig = new TalonFXConfiguration().withSlot0(kSlot0Configs);
+  }
+
   public static class TurretConstants {
 
     public static final int kTransferMotorID = 30;
@@ -93,9 +113,10 @@ public final class Constants
     public static final double flywheelSpeed = -0.75;
     public static final double transferSpeed = 0.75;
 
+    // 15 rotations to go 90 degrees
     public static final double HOOD_ANGLE_RATIO = -15.0 / 90.0; // Converting angle inputs to Encoder Counts
     public static final double ZERO_ANGLE = 0;
-    public static final double NEAR_ANGLE = 30; // Degrees
+    public static final double NEAR_ANGLE = 15; // Degrees
     public static final double FAR_ANGLE = 60; // Degrees
     public static final double hood_snap = 10; // Degrees
 

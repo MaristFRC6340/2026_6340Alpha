@@ -73,7 +73,7 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * PhotonVision class to keep an accurate odometry.
    */
-  private       Vision      vision;
+  //private       Vision      vision;
 
   // telemetry stuff
   private final DoubleLogEntry poseX = new DoubleLogEntry(DataLogManager.getLog(), "/swerve/pose/x");
@@ -147,7 +147,7 @@ public class SwerveSubsystem extends SubsystemBase
    */
   public void setupPhotonVision()
   {
-    vision = new Vision(swerveDrive::getPose, swerveDrive.field);
+    //vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
   public void logPose() {
@@ -164,7 +164,7 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      //vision.updatePoseEstimation(swerveDrive);
     }
     logPose();
   }

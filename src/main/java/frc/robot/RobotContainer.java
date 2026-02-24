@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
@@ -48,8 +49,11 @@ public class RobotContainer
   // Driver Controller init
   final CommandXboxController driverXbox = new CommandXboxController(0);
 
+  /* DEBUG */
+  final CommandXboxController operatorXbox = new CommandXboxController(1);
+
   // Operator Controller init
-  final CommandPS4Controller driverPS4 = new CommandPS4Controller(1);
+  // final CommandPS4Controller operatorPS4 = new CommandPS4Controller(1);
 
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
@@ -57,8 +61,11 @@ public class RobotContainer
   
   private final TurretSubsystem turretSubsystem = new TurretSubsystem();
 
+  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+
   private final VisionSubsystem visionSubsystem = new VisionSubsystem();
 
+  
   private Trigger driverA = driverXbox.a();
   private Trigger driverB = driverXbox.b();
   private Trigger driverX = driverXbox.x();
@@ -69,28 +76,47 @@ public class RobotContainer
   private Trigger driverBack = driverXbox.back();
   private Trigger driverLTrigger = driverXbox.leftTrigger(); // i believe the parameter changes axis value needed
   private Trigger driverRTrigger = driverXbox.rightTrigger();
-  private Trigger driverLStick = driverXbox.leftStick();
-  private Trigger driverRStick = driverXbox.rightStick();
+  private Trigger driverLStick = driverXbox.leftStick(); // L3
+  private Trigger driverRStick = driverXbox.rightStick(); // R3
   private Trigger driverDpadUp = driverXbox.povUp();
   private Trigger driverDpadRight = driverXbox.povRight();
   private Trigger driverDpadDown = driverXbox.povDown();
   private Trigger driverDpadLeft = driverXbox.povLeft();
+  
+  /* DEBUG */
+  private Trigger operatorA = operatorXbox.a();
+  private Trigger operatorB = operatorXbox.b();
+  private Trigger operatorX = operatorXbox.x();
+  private Trigger operatorY = operatorXbox.y();
+  private Trigger operatorL = operatorXbox.leftBumper();
+  private Trigger operatorR = operatorXbox.rightBumper();
+  private Trigger operatorStart = operatorXbox.start();
+  private Trigger operatorBack = operatorXbox.back();
+  private Trigger operatorLTrigger = operatorXbox.leftTrigger(); // i believe the parameter changes axis value needed
+  private Trigger operatorRTrigger = operatorXbox.rightTrigger();
+  private Trigger operatorLStick = operatorXbox.leftStick();
+  private Trigger operatorRStick = operatorXbox.rightStick();
+  private Trigger operatorDpadUp = operatorXbox.povUp();
+  private Trigger operatorDpadRight = operatorXbox.povRight();
+  private Trigger operatorDpadDown = operatorXbox.povDown();
+  private Trigger operatorDpadLeft = operatorXbox.povLeft();
 
-  private Trigger operatorCross = driverPS4.cross();
-  private Trigger operatorCircle = driverPS4.circle();
-  private Trigger operatorSquare = driverPS4.square();
-  private Trigger operatorTriangle = driverPS4.triangle();
-  private Trigger operatorL = driverPS4.L1();
-  private Trigger operatorR = driverPS4.R1();
-  private Trigger operatorStart = driverPS4.options();
-  private Trigger operatorLTrigger = driverPS4.axisGreaterThan(3,.05);
-  private Trigger operatorRTrigger = driverPS4.axisGreaterThan(4,.05);
-  private Trigger operatorLStick = new Trigger(() -> Math.abs(driverPS4.getLeftY()) > .05);
-  private Trigger operatorRStick = new Trigger(() -> Math.abs(driverPS4.getRightY()) > .05);
-  private Trigger operatorDpadUp = driverPS4.povUp();
-  private Trigger operatorDpadRight = driverPS4.povRight();
-  private Trigger operatorDpadDown = driverPS4.povDown();
-  private Trigger operatorDpadLeft = driverPS4.povLeft();
+  /* USES PS4 CONTROLLER */
+  // private Trigger operatorCross = driverPS4.cross();
+  // private Trigger operatorCircle = driverPS4.circle();
+  // private Trigger operatorSquare = driverPS4.square();
+  // private Trigger operatorTriangle = driverPS4.triangle();
+  // private Trigger operatorL = driverPS4.L1();
+  // private Trigger operatorR = driverPS4.R1();
+  // private Trigger operatorStart = driverPS4.options();
+  // private Trigger operatorLTrigger = driverPS4.axisGreaterThan(3,.05);
+  // private Trigger operatorRTrigger = driverPS4.axisGreaterThan(4,.05);
+  // private Trigger operatorLStick = new Trigger(() -> Math.abs(driverPS4.getLeftY()) > .05);
+  // private Trigger operatorRStick = new Trigger(() -> Math.abs(driverPS4.getRightY()) > .05);
+  // private Trigger operatorDpadUp = driverPS4.povUp();
+  // private Trigger operatorDpadRight = driverPS4.povRight();
+  // private Trigger operatorDpadDown = driverPS4.povDown();
+  // private Trigger operatorDpadLeft = driverPS4.povLeft();
   // private Trigger operatorBack = driverPS4.create();
 
 
@@ -211,13 +237,25 @@ public class RobotContainer
     driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
     driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
    // driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
-    driverA.whileTrue(turretSubsystem.shootWhileHeldVelocity(50, TurretConstants.transferSpeed));
+    driverA.whileTrue(turretSubsystem.shootWhileHeldVelocity(45, TurretConstants.transferSpeed));
 
-    driverRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
-    driverLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());
+    operatorRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
+    operatorLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());
+    driverLTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.25));
+    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.25));
+
+    operatorB.whileTrue(intakeSubsystem.intakeUpCommand());
+    operatorA.whileTrue(intakeSubsystem.intakeDownCommand());
+
+    // is there a way to make slower?
+    driverL.whileTrue(intakeSubsystem.intakeDownCommand());
+    driverR.whileTrue(intakeSubsystem.intakeUpCommand());
 
     driverDpadUp.whileTrue(turretSubsystem.aimTurretCommand());
     driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
+
+    //driverDpadRight.whileTrue(IntakeSubsystem.)
+   // driverDpadLeft.whileTrue(IntakeSubsystem.)
 
     // operator commands
     // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.setHoodAngle(-driverPS4.getRightY()*90.0)));
@@ -261,7 +299,8 @@ public class RobotContainer
       
     } else
     {
-      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+      // resets field centric
+      driverLStick.onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
@@ -294,6 +333,6 @@ public class RobotContainer
   }
 
   public void periodic() {
-    SmartDashboard.putNumber("Raw Y Axis", -driverPS4.getRightY());
+    // SmartDashboard.putNumber("Raw Y Axis", -driverPS4.getRightY());
   }
 }

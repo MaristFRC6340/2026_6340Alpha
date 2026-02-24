@@ -42,12 +42,7 @@ public class TurretSubsystem extends SubsystemBase {
    private double turnPower = 0;
 
    private NetworkTable photonTable;
-  private NetworkTableEntry targetYaw;
-
-
-
-
-
+   private NetworkTableEntry targetYaw;
 
     //Vision vision = new Vision();
     public TurretSubsystem() {
@@ -109,6 +104,8 @@ public class TurretSubsystem extends SubsystemBase {
 
         SmartDashboard.putNumber("Shooter Velocity", 0);
 
+        SmartDashboard.putNumber("Turret Angle", 0);
+
         photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
         targetYaw = photonTable.getEntry("turretcamera/targetYaw");
 
@@ -137,16 +134,39 @@ public class TurretSubsystem extends SubsystemBase {
         double shooterVelocity = flywheelMotor.getVelocity().getValueAsDouble()*60;
         SmartDashboard.putNumber("Shooter Velocity", shooterVelocity);
         
+        double tAngle = rotationMotor.getPosition().getValue().magnitude(); // in degrees
+        SmartDashboard.putNumber("Turret Angle", tAngle);
 
         
 
     }
 
-
+    // # ROTATION/TURRET MOTOR
     public void setTurretPosition(double pos) {
         rotationMotor.setControl(m_request.withPosition(pos));
     }
+    
+    public void setTurretSpeed() { // Aim to Camera
+        double yaw = targetYaw.getDouble(0); // Get Yaw
+        turnPower = -kP * yaw;
+        if (turnPower > 0.2) {
+            turnPower = 0.2;
+        }
+        if (turnPower < -0.2) {
+            turnPower = -0.2;
+        }
+        // rotational position limiter (-4 < x < 4)
+        double tAngle = rotationMotor.getPosition().getValue().magnitude();
+        if (Math.abs(tAngle) < 4) {
+            rotationMotor.set(turnPower);
+        } else {
+            rotationMotor.set(0);
+        }
+        SmartDashboard.putNumber("turnPower", turnPower);
+        //System.out.println(turnPower);
+    }
 
+    // # FLYWHEEL MOTOR
     public void setFlywheelSpeed(double speed) {
         flywheelMotor.set(speed);
     }
@@ -159,15 +179,12 @@ public class TurretSubsystem extends SubsystemBase {
         return flywheelMotor.get() > (TurretConstants.flywheelSpeed-(TurretConstants.flywheelSpeed*0.25));
     }
 
-    // resets encoder
-    public void resetRotationEncoder() {
-        rotationMotor.setPosition(0);
-    }
-
-    // positive value
-    public void setTransferMotorSpeed(double speed){
+    // # TRANSFER MOTOR
+    public void setTransferMotorSpeed(double speed){// positive value
           transferMotor.set(speed);
     }
+
+    // # HOOD MOTOR
 
     public void setHoodAngle(double pos) {
         hoodMotor.setControl(m_request.withPosition(pos * TurretConstants.HOOD_ANGLE_RATIO));
@@ -178,26 +195,16 @@ public class TurretSubsystem extends SubsystemBase {
         double updatedPos = currentPos + (amt);
         if (updatedPos > 80) updatedPos = 80;
         if (updatedPos < 0) updatedPos = 0;
-        setHoodAngle(updatedPos);
+        setHoodAngle(updatedPos); 
     }
 
-    public void setTurretSpeed() { //Aim to Camera
-        double yaw = targetYaw.getDouble(0); // Get Yaw
-        turnPower = -kP * yaw;
-        if (turnPower > 0.3) {
-            turnPower = 0.3;
-        }
-        if (turnPower < -0.3) {
-            turnPower = -0.3;
-        }
-        rotationMotor.set(turnPower);
-        SmartDashboard.putNumber("turnPower", turnPower);
-        //System.out.println(turnPower);
+    // # VECTOR MOTOR    
+
+    public void setVectorSpeed(double speed) {
+        vectorMotor.set(speed);
     }
 
     /* COMMANDS */
-
-
 
     public Command getSetFlywheelCommand(double speed) {
         return this.startEnd(() -> {
@@ -238,12 +245,7 @@ public class TurretSubsystem extends SubsystemBase {
         });
      }
 
-    // public Command getSetPositionCommand(double position) {
-    //    //sets rotational position of turret
-    //     return this.runOnce(() -> {
-    //         setTurretPosition(position);
-    //     });
-    // }
+    // # HOOD MOTOR
 
     public Command getSetHoodAngleHigh(){
        //Sets hood angle position on operator input
@@ -262,15 +264,6 @@ public class TurretSubsystem extends SubsystemBase {
     public Command changeHoodAnglePos(double amt) {
         return Commands.run(() -> this.changeHoodAngle(amt));
     }
-
-    
-
-   public Command intakeSpeedCommand(){
-      //Sets Intake Speed with Trigger Inputs
-      return this.runOnce(() -> {
-
-      });
-   }
 
    public Command stopLauncher(){
       //calls the stop() command
