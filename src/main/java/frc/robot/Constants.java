@@ -7,6 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -70,12 +71,14 @@ public final class Constants
 
     public static final double PIVOT_ANGLE_RATIO = -11.559570 / 90.0; // 11.5 rotations to go 90 degrees
 
+    public static final double INTAKE_DOWN_POS = -5; // -11.559570
+
     private static final Slot0Configs kSlot0Configs = new Slot0Configs()
     .withKA(0)
-    .withKG(.3)
+    .withKG(0.3) // was 0.3
     .withKS(.0)
     .withKV(0)
-    .withKP(0.001)
+    .withKP(0.35)
     .withKI(0)
     .withKD(0);
 
@@ -119,7 +122,6 @@ public final class Constants
     public static final double NEAR_ANGLE = 15; // Degrees
     public static final double FAR_ANGLE = 60; // Degrees
     public static final double hood_snap = 10; // Degrees
-
   }
 
   public static class SwerveConstants {
@@ -136,6 +138,8 @@ public final class Constants
   public static final class VisionConstants{
     public static final  double maximumAmbiguity = 0.25;
     public static final double debouncetimeMilli = 15;
+    // distance b/t robot & april tag + tolerance => distance b/t robot & hub
+    public static final double DISTANCE_TOLERANCE = 0.45; // meters
 
     public static final class CameraTemplate{
       public static final String name = "tempalte"; // tempalte?

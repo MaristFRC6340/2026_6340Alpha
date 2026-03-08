@@ -19,7 +19,7 @@ public class IntakeSubsystem extends SubsystemBase {
     TalonFX intakePivot; // doesn't require PID
     TalonFX intakeRoller;
 
-    PositionVoltage pos_request = new PositionVoltage(0).withSlot(0).withVelocity(5.0);
+    PositionVoltage pos_request = new PositionVoltage(0).withSlot(0);
 
     double pivotPos = 0;
 
@@ -31,6 +31,8 @@ public class IntakeSubsystem extends SubsystemBase {
         intakePivot.getConfigurator().apply(IntakeConstants.kPivotConfig);
 
         SmartDashboard.putNumber("Pivot Position", 0);
+
+        intakePivot.setPosition(0.0); // resets pivot encoder
     }
 
     public void periodic() {
@@ -43,8 +45,10 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     // in rotations
+    // Do not Use for Now - michaudc
     public void setPivotAngle(double pos){
         intakePivot.setControl(pos_request.withPosition(pos));
+        // intakePivot.setControl(test_request.withPosition(pos));
     }
 
     public void setRollerSpeed(double speed){
@@ -61,18 +65,44 @@ public class IntakeSubsystem extends SubsystemBase {
         });
     }
 
+    // Do Not Use now
+    // michaudc
     public Command intakeDownCommand(){
-        return Commands.run(() -> this.setPivotAngle(-5)); // down is -11.559570
+        return Commands.run(() -> this.setPivotAngle(IntakeConstants.INTAKE_DOWN_POS));
     }
 
+    // Do Not use now
+    // michaudc
     public Command intakeUpCommand(){
         return Commands.run(() -> this.setPivotAngle(0));
     }
 
+    // Do Not use now
+    // michaudc
+    public Command setIntakePositionCommand(double pos) {
+        return Commands.runOnce(() -> this.setPivotAngle(pos));
+    }
+
+    // Use This
     public Command setRollerSpeedCommand(double speed){
         return Commands.startEnd(
             () -> setRollerSpeed(speed),
             () -> setRollerSpeed(0)
         );
     }
+
+    /**public Command intake(double intakeSpeed, double transferSpeed){ Need to run transfer and intake
+        return Commands.sequence(
+            this.runOnce(() -> { setRollerSpeed(intakeSpeed); }),
+            Commands.waitSeconds(1),
+            this.run(() -> { setTransferMotorSpeed(transferSpeed);
+                            vectorMotor.set(transferSpeed); })
+        ).finallyDo(interrupted -> {
+            setFlywheelSpeed(0);
+            setTransferMotorSpeed(0);
+            vectorMotor.set(0);
+        });
+     }
+    }
+     */
 }

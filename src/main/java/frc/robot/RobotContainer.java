@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -59,13 +60,12 @@ public class RobotContainer
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve"));
   
-  private final TurretSubsystem turretSubsystem = new TurretSubsystem();
-
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
   private final VisionSubsystem visionSubsystem = new VisionSubsystem();
 
-  
+  private final TurretSubsystem turretSubsystem = new TurretSubsystem(visionSubsystem);
+
   private Trigger driverA = driverXbox.a();
   private Trigger driverB = driverXbox.b();
   private Trigger driverX = driverXbox.x();
@@ -187,7 +187,8 @@ public class RobotContainer
   // use SmartDashboard for a list of auto options
   SendableChooser<Command> autoChooser;
 
-  // test
+  // commands which only need one instance
+  private final Command aimCommand = turretSubsystem.aimTurretCommand();
   
 
   /**
@@ -216,43 +217,64 @@ public class RobotContainer
   private void configureBindings()
   {
     Command driveFieldOrientedDirectAngleKeyboard = drivebase.driveFieldOriented(driveDirectAngleKeyboard);
-    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
+    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity); // Fast Mode
     Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngle);
 
     // Slow Mode Fix Temporary - Right Trigger Makes the Robot Drive Slow - michaudc
     driverRTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow));
-
-    // X: Bump align (Driver)
-    // driverX.onTrue(new InstantCommand(() -> ));
     
-    // debug
-    // driverDpadUp.onTrue(new InstantCommand(() -> turretSubsystem.getSetPositionCommand(0.01)));
-    // driverX.whileTrue(new InstantCommand(() -> turretSubsystem.getSetTransferSpeed(0.25)));
-    driverX.whileTrue(new InstantCommand(() -> turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed)
-    .withTimeout(1)
-    .andThen(turretSubsystem.getSetTransferCommand(0.5))));
-    // .andThen(turretSubsystem.getSetTransferCommand(0.5)));
-    // driverX.whileTrue(Commands.waitUntil(() -> turretSubsystem.isFlywheelRunning()).withTimeout(0.5)
-    // .andThen(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed)));
-    driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
-    driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
+    //driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
+    //driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
+
+
+
    // driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
-    driverA.whileTrue(turretSubsystem.shootWhileHeldVelocity(45, TurretConstants.transferSpeed));
 
-    operatorRTrigger.whileTrue(turretSubsystem.getSetHoodAngleHigh());  
-    operatorLTrigger.whileTrue(turretSubsystem.getSetHoodAngleLow());
-    driverLTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.25));
-    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.25));
+     // Disabling Aiming Turret commands
+    //driverL.whileTrue(intakeSubsystem.intakeDownCommand());
+    //driverDpadUp.whileTrue(aimCommand);
+    //driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
 
-    operatorB.whileTrue(intakeSubsystem.intakeUpCommand());
-    operatorA.whileTrue(intakeSubsystem.intakeDownCommand());
+    // # ---------------------- Operator Commands ------------------------ #
+    //operatorDpadLeft.onTrue(turretSubsystem.changeHoodAngleCommand(1));
+    //operatorDpadRight.onTrue(turretSubsystem.changeHoodAngleCommand(-1));
+    //operatorX.onTrue(turretSubsystem.resetHoodEncoderCommand());
 
-    // is there a way to make slower?
-    driverL.whileTrue(intakeSubsystem.intakeDownCommand());
-    driverR.whileTrue(intakeSubsystem.intakeUpCommand());
+    // Gwinnet Commands to change Hood Angle
+    //operatorDpadLeft.whileTrue(turretSubsystem.getSetHoodAngleHigh());
+    //operatorDpadRight.whileTrue(turretSubsystem.getSetHoodAngleLow());
 
-    driverDpadUp.whileTrue(turretSubsystem.aimTurretCommand());
-    driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
+    // Intake Roller (+ = intake)
+    operatorRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.33)); 
+    operatorLTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.33));
+
+    // Intake Pivot; + brings slapdown up, - drops it down
+    operatorDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2));
+    operatorDpadUp.whileTrue(intakeSubsystem.getSetPivotSpeed(0.2));
+
+    // Shooter Commands
+    // Turn on Flywheel
+    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
+    operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
+    // Turn off Flywheel
+    operatorA.whileTrue(turretSubsystem.stopFlyWheelCommand());
+    operatorA.onTrue(turretSubsystem.getSetHoodAngleLow());
+
+    // Right Trigger to Shoot - both Vector and Transfer Motors
+    operatorR.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(0.8));
+
+
+
+    // for the future when intake stops using a belt
+    //operatorDpaddown.whileTrue(intakeSubsystem.setIntakePositionCommand(IntakeConstants.INTAKE_DOWN_POS));
+    //operatorDpadUp.whileTrue(intakeSubsystem.setIntakePositionCommand(0));
+
+    // turret shoot
+    // operatorA.whileTrue(turretSubsystem.shootWhileHeldVelocity(50, TurretConstants.transferSpeed));
+
+    // operatorDpadUp.whileTrue(turretSubsystem.setVectorMotorCommand(0.8));
+    // operatorDpadDown.whileTrue(turretSubsystem.setVectorMotorCommand(-0.8));
+   
 
     //driverDpadRight.whileTrue(IntakeSubsystem.)
    // driverDpadLeft.whileTrue(IntakeSubsystem.)
@@ -308,7 +330,9 @@ public class RobotContainer
       driverXbox.rightBumper().onTrue(Commands.none());
     }
 
-    drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity));
+    drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularSlow));     // Slow Mode
+    //drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity)); // Fast Mode
+
   }
 
   /**
