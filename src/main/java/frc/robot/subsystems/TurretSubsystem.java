@@ -214,7 +214,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void changeHoodAngle(double amt) { // amt is a multiplier
-        double currentPos = hoodMotor.getPosition().getValue().magnitude(); // in degrees
+        double currentPos = hoodMotor.getPosition().getValue().magnitude();
         double updatedPos = currentPos + (amt);
 
         double updatedPosToDegrees = updatedPos/TurretConstants.HOOD_ANGLE_RATIO;
@@ -273,6 +273,8 @@ public class TurretSubsystem extends SubsystemBase {
         return Commands.runEnd(() -> setVectorTransferSpeed(speed), 
                               () -> setVectorTransferSpeed(0));
     }
+
+    
 
     public Command getSetTransferCommand(double speed){
         //powers transfer motor on operator input
@@ -341,7 +343,7 @@ public class TurretSubsystem extends SubsystemBase {
    }
 
    public Command aimTurretCommand() {
-       return Commands.run(  () -> this.setTurretSpeed(), this)
+       return this.run(() -> this.setTurretSpeed())
        .until(() -> Math.abs(visionSubsystem.getFinalYaw()) < 3.0)
        .finallyDo(interrupted -> rotationMotor.set(0));
    }

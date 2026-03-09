@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HubToDepot"
+            "pathName": "Center_Depot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DepotToHub"
+            "pathName": "Depot_Center"
           }
         }
       ]

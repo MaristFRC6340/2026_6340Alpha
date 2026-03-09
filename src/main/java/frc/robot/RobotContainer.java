@@ -219,34 +219,37 @@ public class RobotContainer
     Command driveFieldOrientedDirectAngleKeyboard = drivebase.driveFieldOriented(driveDirectAngleKeyboard);
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity); // Fast Mode
     Command driveSetpointGen = drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngle);
-
-    // Slow Mode Fix Temporary - Right Trigger Makes the Robot Drive Slow - michaudc
-    driverRTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow));
     
+    // # ---------------------- Driver Commands ------------------------ #
+    // Slow Mode Fix Temporary - Right Trigger Makes the Robot Drive Slow - michaudc
+    driverLTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow)); 
+
     //driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
     //driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
 
-
-
    // driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
 
-     // Disabling Aiming Turret commands
-    //driverL.whileTrue(intakeSubsystem.intakeDownCommand());
-    //driverDpadUp.whileTrue(aimCommand);
-    //driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
+    // Disabling Aiming Turret commands
+    // driverL.whileTrue(intakeSubsystem.intakeDownCommand());
+    // driverDpadUp.whileTrue(aimCommand);
+    // driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
 
     // # ---------------------- Operator Commands ------------------------ #
     //operatorDpadLeft.onTrue(turretSubsystem.changeHoodAngleCommand(1));
     //operatorDpadRight.onTrue(turretSubsystem.changeHoodAngleCommand(-1));
     //operatorX.onTrue(turretSubsystem.resetHoodEncoderCommand());
 
-    // Gwinnet Commands to change Hood Angle
+    // Gwinnett Commands to change Hood Angle
     //operatorDpadLeft.whileTrue(turretSubsystem.getSetHoodAngleHigh());
     //operatorDpadRight.whileTrue(turretSubsystem.getSetHoodAngleLow());
 
     // Intake Roller (+ = intake)
-    operatorRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.33)); 
-    operatorLTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.33));
+    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.33)); 
+    driverR.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.33));
+
+    // Driver Lifts and Lowers Intake
+    driverL.whileTrue(intakeSubsystem.getSetPivotSpeed(0.2)); // Lifts
+    driverDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2)); // Lowers
 
     // Intake Pivot; + brings slapdown up, - drops it down
     operatorDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2));
@@ -254,14 +257,23 @@ public class RobotContainer
 
     // Shooter Commands
     // Turn on Flywheel
-    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
+    // 75 for Close
+    // 125 for Far
+    // Close Shooting
+    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(75));
     operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
+
+    // Far Shooting
+    operatorY.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(125));
+    operatorY.onTrue(turretSubsystem.getSetHoodAngleHigh());
+
     // Turn off Flywheel
     operatorA.whileTrue(turretSubsystem.stopFlyWheelCommand());
     operatorA.onTrue(turretSubsystem.getSetHoodAngleLow());
 
     // Right Trigger to Shoot - both Vector and Transfer Motors
     operatorR.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(0.8));
+    operatorL.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(-0.8));
 
 
 
@@ -330,8 +342,8 @@ public class RobotContainer
       driverXbox.rightBumper().onTrue(Commands.none());
     }
 
-    drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularSlow));     // Slow Mode
-    //drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity)); // Fast Mode
+    // drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularSlow));     // Slow Mode
+    drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity)); // Fast Mode
 
   }
 
