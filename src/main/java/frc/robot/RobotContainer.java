@@ -196,9 +196,28 @@ public class RobotContainer
    */
   public RobotContainer()
   {
+
+    // Named Commands
+    NamedCommands.registerCommand("Zero Gyro", drivebase.zeroGyroCommand());
+
+    NamedCommands.registerCommand("Start Launcher", turretSubsystem.setFlyWheelVelocityCommand(50));
+    NamedCommands.registerCommand("Start Indexer", turretSubsystem.setVectorTransferSpeedCommand(0.8));
+    NamedCommands.registerCommand("Stop Launcher", turretSubsystem.stopFlyWheelCommand());
+    NamedCommands.registerCommand("Stop Indexer", turretSubsystem.setVectorTransferSpeedCommand(0));
+    NamedCommands.registerCommand("Hood Angle High", turretSubsystem.getSetHoodAngleHigh());
+    NamedCommands.registerCommand("Hood Angle Low", turretSubsystem.getSetHoodAngleLow());
+    NamedCommands.registerCommand("Drop Intake", intakeSubsystem.getSetPivotSpeed(-0.2)); // Turns Pivot Motor Down
+    NamedCommands.registerCommand("Stop Intake", intakeSubsystem.getSetPivotSpeed(0)); // Stops Pivot Motor
+
+    NamedCommands.registerCommand("Roller Speed In", intakeSubsystem.setRollerSpeedCommand(0.33));
+    NamedCommands.registerCommand("Stop Rollers", intakeSubsystem.setRollerSpeedCommand(0));
+
     // add auto options to SmartDashboard
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    
+
     // Configure the trigger bindings
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -260,7 +279,7 @@ public class RobotContainer
     // 75 for Close
     // 125 for Far
     // Close Shooting
-    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(75));
+    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
     operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
 
     // Far Shooting
@@ -274,8 +293,6 @@ public class RobotContainer
     // Right Trigger to Shoot - both Vector and Transfer Motors
     operatorR.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(0.8));
     operatorL.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(-0.8));
-
-
 
     // for the future when intake stops using a belt
     //operatorDpaddown.whileTrue(intakeSubsystem.setIntakePositionCommand(IntakeConstants.INTAKE_DOWN_POS));

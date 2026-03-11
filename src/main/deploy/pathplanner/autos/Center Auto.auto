@@ -1,0 +1,130 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 2.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Start Launcher"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Hood Angle High"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Drop Intake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Roller Speed In"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 3.0
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Center Path"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Intake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Roller Speed In"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Start Indexer"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Roller Speed In"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Launcher"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Indexer"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Hood Angle Low"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Rollers"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

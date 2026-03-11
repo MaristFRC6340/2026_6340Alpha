@@ -27,6 +27,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -92,12 +93,9 @@ public class SwerveSubsystem extends SubsystemBase
   public SwerveSubsystem(File directory)
   {
     boolean blueAlliance = false;
-    Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(3.5),
-                                                                      Meter.of(4)),
-                                                    Rotation2d.fromDegrees(0))
-                                       : new Pose2d(new Translation2d(Meter.of(3.5),
-                                                                      Meter.of(4)),
-                                                    Rotation2d.fromDegrees(180));
+    Pose2d startingPose =  new Pose2d(new Translation2d(Meter.of(3.5),
+                                           Meter.of(4)),
+                                          Rotation2d.fromDegrees(180));
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     try
@@ -139,7 +137,7 @@ public class SwerveSubsystem extends SubsystemBase
                                   controllerCfg,
                                   Constants.MAX_SPEED,
                                   new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)),
-                                             Rotation2d.fromDegrees(0)));
+                                             Rotation2d.fromDegrees(180)));
   }
 
   /**
@@ -167,6 +165,8 @@ public class SwerveSubsystem extends SubsystemBase
       //vision.updatePoseEstimation(swerveDrive);
     }
     logPose();
+
+    //SmartDashboard.putString();
   }
 
   @Override
@@ -206,6 +206,7 @@ public class SwerveSubsystem extends SubsystemBase
             } else
             {
               swerveDrive.setChassisSpeeds(speedsRobotRelative);
+              //setChassisSpeedsReversed(speedsRobotRelative);
             }
           },
           // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
@@ -226,7 +227,8 @@ public class SwerveSubsystem extends SubsystemBase
             var alliance = DriverStation.getAlliance();
             if (alliance.isPresent())
             {
-              return alliance.get() == DriverStation.Alliance.Red;
+              //return alliance.get() == DriverStation.Alliance.Red;
+              return false;
             }
             return false;
           },
@@ -569,6 +571,17 @@ public class SwerveSubsystem extends SubsystemBase
     swerveDrive.setChassisSpeeds(chassisSpeeds);
   }
 
+  public void setChassisSpeedsReversed(ChassisSpeeds chassisSpeeds)
+  {
+    double dx = chassisSpeeds.vxMetersPerSecond;
+    double dy = chassisSpeeds.vyMetersPerSecond;
+    double domega = chassisSpeeds.omegaRadiansPerSecond;
+    ChassisSpeeds adjusted = new ChassisSpeeds(-dx, -dy, -domega);
+    swerveDrive.setChassisSpeeds(adjusted);
+  }
+
+
+
   /**
    * Post the trajectory to the field.
    *
@@ -752,6 +765,10 @@ public class SwerveSubsystem extends SubsystemBase
   public SwerveDrive getSwerveDrive()
   {
     return swerveDrive;
+  }
+
+  public Command zeroGyroCommand() {
+    return Commands.runOnce(() -> zeroGyro());
   }
 
 }
