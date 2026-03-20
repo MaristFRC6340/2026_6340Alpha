@@ -113,11 +113,14 @@ public final class Constants
      public static final TalonFXConfiguration kVectorConfig = new TalonFXConfiguration()
     .withSlot0(kSlot0Configs);
 
+    
     public static final double flywheelSpeed = -0.75;
     public static final double transferSpeed = 0.75;
 
     // 15 rotations to go 90 degrees
     public static final double HOOD_ANGLE_RATIO = -15.0 / 90.0; // Converting angle inputs to Encoder Counts
+    // compares tx to turret rotational position; value has little correlation tho
+    public static final double TURRET_ANGLE_RATIO = -0.385; 
     public static final double ZERO_ANGLE = 0;
     public static final double NEAR_ANGLE = 15; // Degrees
     public static final double FAR_ANGLE = 60; // Degrees

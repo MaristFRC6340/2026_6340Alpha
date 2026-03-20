@@ -11,19 +11,13 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.0
+                  "waitTime": 7.0
                 }
               },
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "Start Launcher"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Hood Angle High"
+                  "pathName": "Into the Neutal Zone"
                 }
               },
               {
@@ -48,25 +42,13 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 3.0
+                  "waitTime": 7.0
                 }
               },
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Center Path"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop Intake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Roller Speed In"
+                  "pathName": "Out of the Neutral Zone"
                 }
               }
             ]
@@ -79,19 +61,25 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 4.0
+                  "waitTime": 3.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Hood Angle High"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Start Launcher"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "Start Indexer"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Start Rollers"
                 }
               }
             ]
@@ -116,7 +104,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Stop Indexer"
+                  "name": "Stop Intake"
                 }
               },
               {

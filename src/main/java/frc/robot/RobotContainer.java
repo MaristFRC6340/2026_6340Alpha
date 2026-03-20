@@ -206,10 +206,12 @@ public class RobotContainer
     NamedCommands.registerCommand("Stop Indexer", turretSubsystem.setVectorTransferSpeedCommand(0));
     NamedCommands.registerCommand("Hood Angle High", turretSubsystem.getSetHoodAngleHigh());
     NamedCommands.registerCommand("Hood Angle Low", turretSubsystem.getSetHoodAngleLow());
+
     NamedCommands.registerCommand("Drop Intake", intakeSubsystem.getSetPivotSpeed(-0.2)); // Turns Pivot Motor Down
+    NamedCommands.registerCommand("Agitate Intake", intakeSubsystem.setAgitationCommand(0.05));
     NamedCommands.registerCommand("Stop Intake", intakeSubsystem.getSetPivotSpeed(0)); // Stops Pivot Motor
 
-    NamedCommands.registerCommand("Roller Speed In", intakeSubsystem.setRollerSpeedCommand(0.33));
+    NamedCommands.registerCommand("Start Rollers", intakeSubsystem.setRollerSpeedCommand(0.33));
     NamedCommands.registerCommand("Stop Rollers", intakeSubsystem.setRollerSpeedCommand(0));
 
     // add auto options to SmartDashboard
@@ -251,7 +253,8 @@ public class RobotContainer
     // Disabling Aiming Turret commands
     // driverL.whileTrue(intakeSubsystem.intakeDownCommand());
     // driverDpadUp.whileTrue(aimCommand);
-    // driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
+    driverDpadUp.onTrue(turretSubsystem.aimTurretCommand());
+    driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
 
     // # ---------------------- Operator Commands ------------------------ #
     //operatorDpadLeft.onTrue(turretSubsystem.changeHoodAngleCommand(1));
@@ -263,12 +266,12 @@ public class RobotContainer
     //operatorDpadRight.whileTrue(turretSubsystem.getSetHoodAngleLow());
 
     // Intake Roller (+ = intake)
-    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.33)); 
-    driverR.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.33));
+    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.4)); 
+    driverR.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.4));
 
     // Driver Lifts and Lowers Intake
     driverL.whileTrue(intakeSubsystem.getSetPivotSpeed(0.2)); // Lifts
-    driverDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2)); // Lowers
+    // driverDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2)); // Lowers
 
     // Intake Pivot; + brings slapdown up, - drops it down
     operatorDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2));
@@ -282,6 +285,9 @@ public class RobotContainer
     operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
     operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
 
+    operatorB.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(150));
+    operatorB.onTrue(turretSubsystem.setHoodAngleCommand(45));
+
     // Far Shooting
     operatorY.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(125));
     operatorY.onTrue(turretSubsystem.getSetHoodAngleHigh());
@@ -293,6 +299,9 @@ public class RobotContainer
     // Right Trigger to Shoot - both Vector and Transfer Motors
     operatorR.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(0.8));
     operatorL.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(-0.8));
+
+    //dummy delete later
+    // operatorDpadLeft.onTrue(intakeSubsystem.setAgitationCommand(0.05));
 
     // for the future when intake stops using a belt
     //operatorDpaddown.whileTrue(intakeSubsystem.setIntakePositionCommand(IntakeConstants.INTAKE_DOWN_POS));

@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.swervedrive.Vision;
 
@@ -42,25 +43,25 @@ public class TurretSubsystem extends SubsystemBase {
    private final MotionMagicExpoVoltage rot_MMEV = new MotionMagicExpoVoltage(0);
 
    private final PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
+   // for turret
+   private final PositionVoltage rot_request = new PositionVoltage(0).withSlot(0);
 
    private final VelocityVoltage flywheel_request = new VelocityVoltage(0).withSlot(0);
 
    private final double kP = 0.02;
    private double turnPower = 0;
 
-   private NetworkTable photonTable;
-   private NetworkTableEntry targetYaw;
+   private NetworkTable limTable;
+   private NetworkTableEntry tx;
 
     private VisionSubsystem visionSubsystem;
-
-    private double yaw;
 
     //Vision vision = new Vision();
     public TurretSubsystem(VisionSubsystem visionSubsystem) {
         // axis 1: full body rotation
         rotationMotor = new TalonFX(Constants.TurretConstants.kRotationMotorID);
         //rotationMotor.getConfigurator().apply(Constants.TurretConstants.kRotationConfig);
-        rotationMotor.setNeutralMode(NeutralModeValue.Coast);
+        rotationMotor.setNeutralMode(NeutralModeValue.Brake);
         
         // axis 2: hood
         hoodMotor = new TalonFX(Constants.TurretConstants.kHoodMotorID);
@@ -86,6 +87,14 @@ public class TurretSubsystem extends SubsystemBase {
        
         this.visionSubsystem = visionSubsystem;
         //rotationMotor.setControl(rot_MMEV);
+
+        var slot0ConfigsRotation = new Slot0Configs();
+        slot0ConfigsRotation.kP = 0.45;
+        slot0ConfigsRotation.kI = 0;
+        slot0ConfigsRotation.kD = 0;
+
+        rotationMotor.getConfigurator().apply(slot0ConfigsRotation);
+        
 
         var slot0Configs = new Slot0Configs();
         slot0Configs.kP = 0.8;
@@ -121,8 +130,12 @@ public class TurretSubsystem extends SubsystemBase {
 
         SmartDashboard.putNumber("Turret Angle", 0);
 
-        photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
-        targetYaw = photonTable.getEntry("turretcamera/targetYaw");
+        SmartDashboard.putNumber("Limelight Yaw", 0);
+
+        // photonTable = NetworkTableInstance.getDefault().getTable("photonvision");
+        // targetYaw = photonTable.getEntry("turretcamera/targetYaw");
+        limTable = NetworkTableInstance.getDefault().getTable("limelight");
+        tx = limTable.getEntry("tx");
 
         
     }
@@ -147,9 +160,7 @@ public class TurretSubsystem extends SubsystemBase {
         
         double tAngle = rotationMotor.getPosition().getValue().magnitude(); // in degrees
         SmartDashboard.putNumber("Turret Angle", tAngle);
-
-        yaw = visionSubsystem.getFinalYaw();
-
+        tx = limTable.getEntry("tx");
     }
 
     // # ROTATION/TURRET MOTOR
@@ -158,17 +169,15 @@ public class TurretSubsystem extends SubsystemBase {
     }
     
     public void setTurretSpeed() { // Aim to Camera
-        // double yaw = targetYaw.getDouble(0); // Get Yaw
-        yaw = visionSubsystem.getFinalYaw();
-        System.out.println("yaw: " + yaw);
+        double yaw = tx.getDouble(0); // get yaw from Limelight
         
-        // Deadband: stop turret if within ±3°
+        // Deadband: stop turret if within + or - 3 degrees
         if (Math.abs(yaw) < 3.0) {
             turnPower = 0;
             rotationMotor.set(0);
         } else {
             turnPower = MathUtil.clamp(kP * yaw, -0.1, 0.1);
-            rotationMotor.set(turnPower);
+            rotationMotor.set(-turnPower);
         }
 
         // double tAngle = rotationMotor.getPosition().getValue().in(Rotations);
@@ -184,6 +193,13 @@ public class TurretSubsystem extends SubsystemBase {
         //System.out.println(turnPower);
     }
 
+    public void autoAimTurret() {
+        // double ti = rotationMotor.getPosition().getValue().in(Rotations);
+        double tf = tx.getDouble(0) * TurretConstants.TURRET_ANGLE_RATIO;
+        if (Math.abs(tf) <= 12) { // limiter based off camera
+            rotationMotor.setControl(rot_request.withPosition(tf));
+        }
+    }
     public void resetRotationEncoder() {
         rotationMotor.setPosition(0.0);
     }
@@ -197,10 +213,6 @@ public class TurretSubsystem extends SubsystemBase {
     // Use this one
     public void setFlywheelVelocity(double velocity){
         flywheelMotor.setControl(flywheel_request.withVelocity(velocity).withFeedForward(0.5));
-    }
-
-    public boolean isFlywheelRunning() {
-        return flywheelMotor.get() > (TurretConstants.flywheelSpeed-(TurretConstants.flywheelSpeed*0.25));
     }
 
     // # TRANSFER MOTOR
@@ -274,7 +286,7 @@ public class TurretSubsystem extends SubsystemBase {
                               () -> setVectorTransferSpeed(0));
     }
 
-    
+
 
     public Command getSetTransferCommand(double speed){
         //powers transfer motor on operator input
@@ -323,8 +335,8 @@ public class TurretSubsystem extends SubsystemBase {
        return Commands.runOnce(() -> this.setHoodAngle(TurretConstants.ZERO_ANGLE)); // Now by Positive Angle
     }
 
-    public Command setHoodAnglePos(double angle) {
-        return Commands.run(() -> this.setHoodAngle(angle));
+    public Command setHoodAngleCommand(double angle) {
+        return Commands.runOnce(() -> this.setHoodAngle(angle));
     }
 
     public Command changeHoodAngleCommand(double amt) {
@@ -343,9 +355,10 @@ public class TurretSubsystem extends SubsystemBase {
    }
 
    public Command aimTurretCommand() {
-       return this.run(() -> this.setTurretSpeed())
-       .until(() -> Math.abs(visionSubsystem.getFinalYaw()) < 3.0)
-       .finallyDo(interrupted -> rotationMotor.set(0));
+        return this.run(() -> this.autoAimTurret());
+    //    return this.run(() -> this.setTurretSpeed());
+    //    .until(() -> Math.abs(visionSubsystem.getFinalYaw()) < 3.0)
+    //    .finallyDo(interrupted -> rotationMotor.set(0));
    }
 
    public Command stopTurretCommand() {

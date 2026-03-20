@@ -65,6 +65,19 @@ public class IntakeSubsystem extends SubsystemBase {
         });
     }
 
+    public Command setAgitationCommand(double amt) {
+        return Commands.sequence(
+            this.runOnce( () -> {this.setPivotSpeed(amt);} ),
+            Commands.waitSeconds(0.1),
+            this.runOnce( () -> {this.setPivotSpeed(-amt);} ),
+            Commands.waitSeconds(0.1),
+            this.runOnce( () -> {this.setPivotSpeed(amt);} ),
+            Commands.waitSeconds(0.1),
+            this.runOnce( () -> {this.setPivotSpeed(-amt);} ),
+            Commands.waitSeconds(0.1)
+        ).andThen( () -> {this.setPivotSpeed(0); } );
+    }
+
     // Do Not Use now
     // michaudc
     public Command intakeDownCommand(){
@@ -91,18 +104,4 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
-    /**public Command intake(double intakeSpeed, double transferSpeed){ Need to run transfer and intake
-        return Commands.sequence(
-            this.runOnce(() -> { setRollerSpeed(intakeSpeed); }),
-            Commands.waitSeconds(1),
-            this.run(() -> { setTransferMotorSpeed(transferSpeed);
-                            vectorMotor.set(transferSpeed); })
-        ).finallyDo(interrupted -> {
-            setFlywheelSpeed(0);
-            setTransferMotorSpeed(0);
-            vectorMotor.set(0);
-        });
-     }
-    }
-     */
 }

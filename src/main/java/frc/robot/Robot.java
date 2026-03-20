@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -27,6 +28,18 @@ public class Robot extends TimedRobot
 
   public Robot()
   {
+    // (robotIP):5801 will now point to a Limelight3A's (id 0) web interface stream:
+    // (robotIP):5800 will now point to a Limelight3A's (id 0) video stream:
+    PortForwarder.add(5800, "172.29.0.1", 5800);
+    PortForwarder.add(5801, "172.29.0.1", 5801);
+    PortForwarder.add(5802, "172.29.0.1", 5802);
+    PortForwarder.add(5803, "172.29.0.1", 5803);
+    PortForwarder.add(5804, "172.29.0.1", 5804);
+    PortForwarder.add(5805, "172.29.0.1", 5805);
+    PortForwarder.add(5806, "172.29.0.1", 5806);
+    PortForwarder.add(5807, "172.29.0.1", 5807);
+    PortForwarder.add(5808, "172.29.0.1", 5808);
+    PortForwarder.add(5809, "172.29.0.1", 5809);
     instance = this;
   }
 
