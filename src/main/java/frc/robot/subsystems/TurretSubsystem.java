@@ -137,7 +137,7 @@ public class TurretSubsystem extends SubsystemBase {
         limTable = NetworkTableInstance.getDefault().getTable("limelight");
         tx = limTable.getEntry("tx");
 
-        
+        // LimelightHelpers.setPipelineIndex("TurretVision", 0);
     }
 
     public void periodic()
@@ -195,11 +195,16 @@ public class TurretSubsystem extends SubsystemBase {
 
     public void autoAimTurret() {
         // double ti = rotationMotor.getPosition().getValue().in(Rotations);
-        double tf = tx.getDouble(0) * TurretConstants.TURRET_ANGLE_RATIO;
-        if (Math.abs(tf) <= 12) { // limiter based off camera
+        double tf = (tx.getDouble(0) + TurretConstants.TURRET_CAMERA_OFFSET)
+        * TurretConstants.TURRET_ANGLE_RATIO;
+        if (Math.abs(tf) <= 20) { // limiter based off camera
             rotationMotor.setControl(rot_request.withPosition(tf));
         }
     }
+    //HOOD MOTOR
+    //public void autoAimHood(){
+    //}
+    
     public void resetRotationEncoder() {
         rotationMotor.setPosition(0.0);
     }
@@ -362,7 +367,7 @@ public class TurretSubsystem extends SubsystemBase {
    }
 
    public Command stopTurretCommand() {
-        return this.run(() -> this.rotationMotor.set(0));
+        return this.run(() -> rotationMotor.setControl(rot_request.withPosition(0)));
    }
 
 //    public Command autoStartLauncher(){

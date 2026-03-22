@@ -187,10 +187,6 @@ public class RobotContainer
   // use SmartDashboard for a list of auto options
   SendableChooser<Command> autoChooser;
 
-  // commands which only need one instance
-  private final Command aimCommand = turretSubsystem.aimTurretCommand();
-  
-
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -245,25 +241,9 @@ public class RobotContainer
     // Slow Mode Fix Temporary - Right Trigger Makes the Robot Drive Slow - michaudc
     driverLTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow)); 
 
-    //driverY.whileTrue(turretSubsystem.getSetTransferCommand(0.75)); // operator
-    //driverB.whileTrue(turretSubsystem.getSetFlywheelCommand(TurretConstants.flywheelSpeed));
-
-   // driverA.whileTrue(turretSubsystem.shootWhileHeld(TurretConstants.flywheelSpeed, TurretConstants.transferSpeed));
-
-    // Disabling Aiming Turret commands
-    // driverL.whileTrue(intakeSubsystem.intakeDownCommand());
-    // driverDpadUp.whileTrue(aimCommand);
+    // Turret Auto Aim (up aims, down resets position to 0)
     driverDpadUp.onTrue(turretSubsystem.aimTurretCommand());
     driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
-
-    // # ---------------------- Operator Commands ------------------------ #
-    //operatorDpadLeft.onTrue(turretSubsystem.changeHoodAngleCommand(1));
-    //operatorDpadRight.onTrue(turretSubsystem.changeHoodAngleCommand(-1));
-    //operatorX.onTrue(turretSubsystem.resetHoodEncoderCommand());
-
-    // Gwinnett Commands to change Hood Angle
-    //operatorDpadLeft.whileTrue(turretSubsystem.getSetHoodAngleHigh());
-    //operatorDpadRight.whileTrue(turretSubsystem.getSetHoodAngleLow());
 
     // Intake Roller (+ = intake)
     driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.4)); 
@@ -273,6 +253,15 @@ public class RobotContainer
     driverL.whileTrue(intakeSubsystem.getSetPivotSpeed(0.2)); // Lifts
     // driverDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2)); // Lowers
 
+        // # ---------------------- Operator Commands ------------------------ #
+    //operatorDpadLeft.onTrue(turretSubsystem.changeHoodAngleCommand(1));
+    //operatorDpadRight.onTrue(turretSubsystem.changeHoodAngleCommand(-1));
+    //operatorX.onTrue(turretSubsystem.resetHoodEncoderCommand());
+
+    // Gwinnett Commands to change Hood Angle
+    //operatorDpadLeft.whileTrue(turretSubsystem.getSetHoodAngleHigh());
+    //operatorDpadRight.whileTrue(turretSubsystem.getSetHoodAngleLow());
+    
     // Intake Pivot; + brings slapdown up, - drops it down
     operatorDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2));
     operatorDpadUp.whileTrue(intakeSubsystem.getSetPivotSpeed(0.2));
@@ -299,23 +288,11 @@ public class RobotContainer
     // Right Trigger to Shoot - both Vector and Transfer Motors
     operatorR.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(0.8));
     operatorL.whileTrue(turretSubsystem.setVectorTransferSpeedCommand(-0.8));
-
-    //dummy delete later
-    // operatorDpadLeft.onTrue(intakeSubsystem.setAgitationCommand(0.05));
-
     // for the future when intake stops using a belt
     //operatorDpaddown.whileTrue(intakeSubsystem.setIntakePositionCommand(IntakeConstants.INTAKE_DOWN_POS));
     //operatorDpadUp.whileTrue(intakeSubsystem.setIntakePositionCommand(0));
-
-    // turret shoot
-    // operatorA.whileTrue(turretSubsystem.shootWhileHeldVelocity(50, TurretConstants.transferSpeed));
-
-    // operatorDpadUp.whileTrue(turretSubsystem.setVectorMotorCommand(0.8));
-    // operatorDpadDown.whileTrue(turretSubsystem.setVectorMotorCommand(-0.8));
-   
-
-    //driverDpadRight.whileTrue(IntakeSubsystem.)
-   // driverDpadLeft.whileTrue(IntakeSubsystem.)
+    operatorDpadLeft.whileTrue(turretSubsystem.changeHoodAngleCommand(1.0));
+    operatorDpadRight.whileTrue(turretSubsystem.changeHoodAngleCommand(-1.0));
 
     // operator commands
     // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.setHoodAngle(-driverPS4.getRightY()*90.0)));
