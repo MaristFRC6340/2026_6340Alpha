@@ -121,7 +121,7 @@ public final class Constants
     public static final double HOOD_ANGLE_RATIO = -15.0 / 90.0; // Converting angle inputs to Encoder Counts
     // compares tx to turret rotational position; value has little correlation tho
     public static final double TURRET_ANGLE_RATIO = -0.45; // acts as a "turret sensitivity"
-    public static final double TURRET_CAMERA_OFFSET = 6.66;
+    public static final double TURRET_CAMERA_OFFSET = 0; // was 6.66
     public static final double ZERO_ANGLE = 0;
     public static final double NEAR_ANGLE = 15; // Degrees
     public static final double FAR_ANGLE = 60; // Degrees

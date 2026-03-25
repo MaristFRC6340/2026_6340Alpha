@@ -210,6 +210,8 @@ public class RobotContainer
     NamedCommands.registerCommand("Start Rollers", intakeSubsystem.setRollerSpeedCommand(0.33));
     NamedCommands.registerCommand("Stop Rollers", intakeSubsystem.setRollerSpeedCommand(0));
 
+    NamedCommands.registerCommand("Auto Aim", turretSubsystem.aimTurretCommand());
+
     // add auto options to SmartDashboard
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -242,11 +244,13 @@ public class RobotContainer
     driverLTrigger.whileTrue(drivebase.driveFieldOriented(driveAngularSlow)); 
 
     // Turret Auto Aim (up aims, down resets position to 0)
-    driverDpadUp.onTrue(turretSubsystem.aimTurretCommand());
-    driverDpadDown.whileTrue(turretSubsystem.stopTurretCommand());
+    driverDpadRight.onTrue(turretSubsystem.aimTurretCommand());
+    driverDpadLeft.whileTrue(turretSubsystem.stopTurretCommand());
+    driverDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2));
+    // driverDpadU.onTrue(intakeSubsystem.intakeUpCommand());
 
     // Intake Roller (+ = intake)
-    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.4)); 
+    driverRTrigger.whileTrue(intakeSubsystem.setRollerSpeedCommand(0.35)); 
     driverR.whileTrue(intakeSubsystem.setRollerSpeedCommand(-0.4));
 
     // Driver Lifts and Lowers Intake
@@ -291,11 +295,14 @@ public class RobotContainer
     // for the future when intake stops using a belt
     //operatorDpaddown.whileTrue(intakeSubsystem.setIntakePositionCommand(IntakeConstants.INTAKE_DOWN_POS));
     //operatorDpadUp.whileTrue(intakeSubsystem.setIntakePositionCommand(0));
-    operatorDpadLeft.whileTrue(turretSubsystem.changeHoodAngleCommand(1.0));
-    operatorDpadRight.whileTrue(turretSubsystem.changeHoodAngleCommand(-1.0));
+    // operatorDpadLeft.whileTrue(turretSubsystem.changeHoodAngleCommand(1.0));
+    // operatorDpadRight.whileTrue(turretSubsystem.changeHoodAngleCommand(-1.0));
 
     // operator commands
-    // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.setHoodAngle(-driverPS4.getRightY()*90.0)));
+
+    // this almost acts like the utility wheel harrison was talking about
+    operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(operatorXbox.getRightY())));
+    operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeTurretPosition(-operatorXbox.getRightX())));
     // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(-driverPS4.getRightY())));
     // operatorTriangle.whileTrue(Commands.runOnce(() -> turretSubsystem.changeHoodAnglePos(TurretConstants.hood_snap)));
     // operatorCircle.whileTrue(Commands.runOnce(() -> turretSubsystem.changeHoodAnglePos(-TurretConstants.hood_snap)));

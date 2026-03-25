@@ -101,17 +101,22 @@ public class TurretSubsystem extends SubsystemBase {
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
 
-        // rotationMotor.getConfigurator().apply(slot0Configs);
+        // rotationMotor.getConfigurator().apply(slot0Configs); what is this?
         hoodMotor.getConfigurator().apply(slot0Configs);
+        var slot0ConfigsHoodMotor = new Slot0Configs();
+        slot0ConfigsHoodMotor.kP = 0;
+        slot0ConfigsHoodMotor.kI = 0.;
+        slot0ConfigsHoodMotor.kD = 0;
+        hoodMotor.getConfigurator().apply(slot0ConfigsHoodMotor);
+    
 
+        //Flywheel 
         var slot0ConfigsFlywheel = new Slot0Configs();
         slot0ConfigsFlywheel.kS = 0.1;
         slot0ConfigsFlywheel.kV = 0.12;
         slot0ConfigsFlywheel.kP = 0.11;
         slot0ConfigsFlywheel.kI = 0;
         slot0ConfigsFlywheel.kD = 0;
-        
-
         flywheelMotor.getConfigurator().apply(slot0ConfigsFlywheel);
 
         // reset encoder
@@ -161,46 +166,53 @@ public class TurretSubsystem extends SubsystemBase {
         double tAngle = rotationMotor.getPosition().getValue().magnitude(); // in degrees
         SmartDashboard.putNumber("Turret Angle", tAngle);
         tx = limTable.getEntry("tx");
+
+        SmartDashboard.putBoolean("Subsystem/IS_AIMED", turretPos == tx.getDouble(0)*TurretConstants.TURRET_ANGLE_RATIO);
     }
 
     // # ROTATION/TURRET MOTOR
     public void setTurretPosition(double pos) {
         rotationMotor.setControl(m_request.withPosition(pos));
     }
-    
-    public void setTurretSpeed() { // Aim to Camera
-        double yaw = tx.getDouble(0); // get yaw from Limelight
+
+    public void changeTurretPosition(double amt) {
+        double currentPos = rotationMotor.getPosition().getValue().magnitude();
+        double kP = 1.35;
+        double updatedPos = currentPos + (amt*kP);
         
-        // Deadband: stop turret if within + or - 3 degrees
-        if (Math.abs(yaw) < 3.0) {
-            turnPower = 0;
-            rotationMotor.set(0);
+        if (Math.abs(updatedPos) > 12) {
+            setTurretPosition(currentPos);
         } else {
-            turnPower = MathUtil.clamp(kP * yaw, -0.1, 0.1);
-            rotationMotor.set(-turnPower);
+            setTurretPosition(updatedPos);
         }
+    }
+    
+    public void setTurretSpeed(double speed) { // Aim to Camera
+        // double yaw = tx.getDouble(0); // get yaw from Limelight
+        
+        double turretPos = rotationMotor.getPosition().getValue().magnitude();
 
-        // double tAngle = rotationMotor.getPosition().getValue().in(Rotations);
-        // // Direction-aware soft limits
-        // if ((tAngle <= -4 && turnPower < 0) || (tAngle >= 4 && turnPower > 0)) {
-        //     rotationMotor.set(0); // stop if at limit
-        // } else {
-        //     rotationMotor.set(turnPower); // apply power
-        // }
-
+        if (Math.abs(turretPos) > 4) { // limiter based off camera
+            rotationMotor.set(0);
+            // rotationMotor.setControl(rot_request.withPosition(yaw));
+        } else {
+            // kP * speed? MathUtil.clamp(speed, -0.1, 0.1);
+            rotationMotor.set(speed*kP*0.5);
+        }
         SmartDashboard.putNumber("turnPower", turnPower);
-        rotationMotor.set(turnPower);
-        //System.out.println(turnPower);
+        System.out.println(turretPos + ", " + turnPower);
     }
 
     public void autoAimTurret() {
         // double ti = rotationMotor.getPosition().getValue().in(Rotations);
         double tf = (tx.getDouble(0) + TurretConstants.TURRET_CAMERA_OFFSET)
         * TurretConstants.TURRET_ANGLE_RATIO;
-        if (Math.abs(tf) <= 20) { // limiter based off camera
+        if (Math.abs(tf) <= 22) { // limiter based off camera
             rotationMotor.setControl(rot_request.withPosition(tf));
         }
     }
+
+
     //HOOD MOTOR
     //public void autoAimHood(){
     //}
@@ -352,6 +364,10 @@ public class TurretSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> this.resetHoodEncoder());
     }
 
+    public Command resetTurretEncoderCommand() {
+        return Commands.runOnce(() -> this.resetRotationEncoder());
+    }
+
    public Command stopLauncher(){
       //calls the stop() command
       return this.runOnce(() -> {
@@ -368,6 +384,10 @@ public class TurretSubsystem extends SubsystemBase {
 
    public Command stopTurretCommand() {
         return this.run(() -> rotationMotor.setControl(rot_request.withPosition(0)));
+   }
+
+   public Command setTurretSpeedCommand(double speed) {
+        return this.run(() -> this.setTurretSpeed(speed));
    }
 
 //    public Command autoStartLauncher(){
