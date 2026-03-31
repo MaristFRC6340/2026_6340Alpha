@@ -29,9 +29,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.subsystems.HoodMath;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -62,9 +62,7 @@ public class RobotContainer
   
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
-  private final VisionSubsystem visionSubsystem = new VisionSubsystem();
-
-  private final TurretSubsystem turretSubsystem = new TurretSubsystem(visionSubsystem);
+  private final TurretSubsystem turretSubsystem = new TurretSubsystem();
 
   private Trigger driverA = driverXbox.a();
   private Trigger driverB = driverXbox.b();
@@ -276,7 +274,7 @@ public class RobotContainer
     // 125 for Far
     // Close Shooting
     operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
-    operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
+    // operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
 
     operatorB.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(150));
     operatorB.onTrue(turretSubsystem.setHoodAngleCommand(45));
@@ -303,6 +301,8 @@ public class RobotContainer
     // this almost acts like the utility wheel harrison was talking about
     operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(operatorXbox.getRightY())));
     operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeTurretPosition(-operatorXbox.getRightX())));
+
+    operatorStart.onTrue(turretSubsystem.resetHoodEncoderCommand());
     // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(-driverPS4.getRightY())));
     // operatorTriangle.whileTrue(Commands.runOnce(() -> turretSubsystem.changeHoodAnglePos(TurretConstants.hood_snap)));
     // operatorCircle.whileTrue(Commands.runOnce(() -> turretSubsystem.changeHoodAnglePos(-TurretConstants.hood_snap)));
@@ -376,6 +376,10 @@ public class RobotContainer
 
   public void onTeleopInit() {
     drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity));
+  }
+
+  public void onAutoInit() {
+
   }
 
   public void periodic() {

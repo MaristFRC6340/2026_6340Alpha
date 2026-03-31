@@ -6,6 +6,7 @@ package frc.robot.subsystems.swervedrive;
 
 import static edu.wpi.first.units.Units.Meter;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -20,6 +21,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,10 +29,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -85,6 +90,10 @@ public class SwerveSubsystem extends SubsystemBase
   private PIDController xController = new PIDController(Constants.SwerveConstants.kPX,0,0);
   private PIDController yController = new PIDController(Constants.SwerveConstants.kPY,0,0);
   private PIDController thetaController = new PIDController(Constants.SwerveConstants.kPTheta,0,0);
+
+  // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+  // private final SwerveDrivePoseEstimator poseEstimator;
+  private NetworkTable limTable;
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
@@ -123,6 +132,14 @@ public class SwerveSubsystem extends SubsystemBase
     }
     setupPathPlanner();
     RobotModeTriggers.autonomous().onTrue(Commands.runOnce(this::zeroGyroWithAlliance));
+
+    // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+    // poseEstimator = new SwerveDrivePoseEstimator(
+    //   getKinematics(),
+    //   getHeading(),
+    //   swerveDrive.getModulePositions(),
+    //   startingPose);
+    // limTable = NetworkTableInstance.getDefault().getTable("limelight");
   }
 
   /**
@@ -138,7 +155,43 @@ public class SwerveSubsystem extends SubsystemBase
                                   Constants.MAX_SPEED,
                                   new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)),
                                              Rotation2d.fromDegrees(180)));
+
+      // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+      // poseEstimator = new SwerveDrivePoseEstimator(
+      // getKinematics(),
+      // getHeading(),
+      // swerveDrive.getModulePositions(),
+      // swerveDrive.getPose());
+      // limTable = NetworkTableInstance.getDefault().getTable("limelight");
   }
+
+  // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+  // public Pose2d getLimelightPose() {
+  //       String entryName = "";
+
+  //       var alliance = DriverStation.getAlliance();
+  //       if (alliance.get() == Alliance.Blue) {
+  //           entryName = "botpose_wpiblue";
+  //       } else {
+  //           entryName = "botpose_wpired";
+  //       }
+        
+  //       double[] poseArray = limTable.getEntry(entryName).getDoubleArray(new double[6]);
+
+  //       if (poseArray.length < 6) return null;
+
+  //       double x = poseArray[0];
+  //       double y = poseArray[1];
+  //       double rotationDegrees = poseArray[5];
+  //       return new Pose2d(
+  //           new Translation2d(x, y),
+  //           Rotation2d.fromDegrees(rotationDegrees)
+  //       );
+  //   }
+
+    private boolean aprilTagDetected() {
+        return limTable.getEntry("tv").getDouble(0) == 1; // true if detected
+    }
 
   /**
    * Setup the photon vision class.
@@ -166,8 +219,30 @@ public class SwerveSubsystem extends SubsystemBase
     }
     logPose();
 
+    // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+    // poseEstimator.update(swerveDrive.getOdometryHeading(), swerveDrive.getModulePositions());
+
+    // Pose2d visionPose = getLimelightPose();
+    // if (visionPose != null && aprilTagDetected()) {
+    //   double latencyMs = limTable.getEntry("tl").getDouble(0) + limTable.getEntry("cl").getDouble(0);
+    //   double timestamp = Timer.getFPGATimestamp() - latencyMs / 1000.0;
+
+    //   poseEstimator.addVisionMeasurement(visionPose, timestamp);
+    // }
     //SmartDashboard.putString();
   }
+
+  // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+  // public Pose2d getEstimatedPose2d() {
+  //   return poseEstimator.getEstimatedPosition();
+  // }
+  // POSE ESTIMATOR FOR BETTER AIMING - UNTESTED
+  // public Rotation2d getAngleToHub() {
+  //   Pose2d robotPose = getPose();
+  //   Translation2d delta = Constants.HUB_CENTER.minus(robotPose.getTranslation());
+  //   Rotation2d angleToHub = new Rotation2d(delta.getX(), delta.getY());
+  //   return angleToHub.minus(robotPose.getRotation());
+  // }
 
   @Override
   public void simulationPeriodic()
