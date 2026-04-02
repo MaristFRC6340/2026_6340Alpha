@@ -267,20 +267,22 @@ public class RobotContainer
     // Intake Pivot; + brings slapdown up, - drops it down
     operatorDpadDown.whileTrue(intakeSubsystem.getSetPivotSpeed(-0.2));
     operatorDpadUp.whileTrue(intakeSubsystem.getSetPivotSpeed(0.2));
+    operatorDpadRight.onTrue(turretSubsystem.aimTurretCommand());
 
     // Shooter Commands
     // Turn on Flywheel
     // 75 for Close
     // 125 for Far
     // Close Shooting
-    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
+    operatorX.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50)); // Nearer Shot
     // operatorX.onTrue(turretSubsystem.getSetHoodAngleHigh());
 
-    operatorB.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(150));
-    operatorB.onTrue(turretSubsystem.setHoodAngleCommand(45));
+    operatorB.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(65)); // Distance Shot
+    // operatorB.whileTrue(turretSubsystem.setTurretPositionCommand(0));
+    // operatorB.onTrue(turretSubsystem.setHoodAngleCommand(45));
 
     // Far Shooting
-    operatorY.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(125));
+    operatorY.whileTrue(turretSubsystem.setFlyWheelVelocityCommand(50));
     operatorY.onTrue(turretSubsystem.getSetHoodAngleHigh());
 
     // Turn off Flywheel
@@ -299,8 +301,9 @@ public class RobotContainer
     // operator commands
 
     // this almost acts like the utility wheel harrison was talking about
-    operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(operatorXbox.getRightY())));
-    operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeTurretPosition(-operatorXbox.getRightX())));
+    operatorDpadLeft.whileTrue(turretSubsystem.stopTurretCommand());
+   // operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(operatorXbox.getRightY())));
+   // operatorDpadLeft.whileTrue(Commands.run(() -> turretSubsystem.changeTurretPosition(-operatorXbox.getRightX())));
 
     operatorStart.onTrue(turretSubsystem.resetHoodEncoderCommand());
     // operatorRStick.whileTrue(Commands.run(() -> turretSubsystem.changeHoodAngle(-driverPS4.getRightY())));
@@ -348,7 +351,7 @@ public class RobotContainer
       driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
-      driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+      //driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
     }
 

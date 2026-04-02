@@ -57,6 +57,7 @@ public class TurretSubsystem extends SubsystemBase {
    private NetworkTable limTable;
    private NetworkTableEntry tx;
    private NetworkTableEntry ty;
+   private double HoodAngle1 = 0;
 
     private HoodMath hoodMath;
 
@@ -167,7 +168,7 @@ public class TurretSubsystem extends SubsystemBase {
         tx = limTable.getEntry("tx");
         ty = limTable.getEntry("ty");
         
-        SmartDashboard.putNumber("Target Distance", hoodMath.getDistanceFromAprilTag());
+        
     }
 
     /* ROTATION/TURRET MOTOR */
@@ -200,7 +201,7 @@ public class TurretSubsystem extends SubsystemBase {
             rotationMotor.set(speed*kP*0.5);
         }
         SmartDashboard.putNumber("turnPower", turnPower);
-        System.out.println(turretPos + ", " + turnPower);
+       // System.out.println(turretPos + ", " + turnPower);
     }
 
     public void autoAimTurret() {
@@ -210,19 +211,17 @@ public class TurretSubsystem extends SubsystemBase {
         RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("limelight");
         double kP = 0.8;
         
-        if (Math.abs(tf) <= 24.5) { // limiter based off camera
+        if (Math.abs(tf) <= 25.4) { // limiter based off camera
             SmartDashboard.putBoolean("Subsystem/IS_AIMED", true);
             if (fiducials.length >= 2) { // sets tf to the midpoint between the two separate tags
                 double theta1 = fiducials[0].txnc;
                 double theta2 = fiducials[1].txnc;
                 tf = (theta1 + theta2) / 2;
-                System.out.println("MIDPT: " + tf);
+                //System.out.println("MIDPT: " + tf);
             }
-            rotationMotor.setControl(rot_request.withPosition(tf));
+            //rotationMotor.setControl(rot_request.withPosition(tf)); Uncomment to bring rotation back
             /* THIS CHANGES THE HOOD ANGLE. IF THIS MESSES UP SOMEHOW, COMMENT IT OUT. THANKS. */
-            setHoodAngle(hoodMath.getHoodAngle(hoodMath.getDistanceFromAprilTag())*kP);
-        } else {
-            setHoodAngle(0);
+            setHoodAngle(hoodMath.getHoodAngle(hoodMath.getDistanceFromAprilTag()+1+HoodAngle1)*kP);
         }
 
         
@@ -240,6 +239,20 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void setFlywheelVelocity(double velocity){
+        if (hoodMath.getDistanceFromAprilTag() > 2.86) {
+            velocity += 21;
+            HoodAngle1 = 6;
+            //System.out.println("FASTER!!!!!!!!!!!");
+        }
+        else if (hoodMath.getDistanceFromAprilTag() > 2.4) {
+            velocity += 14.2;
+            HoodAngle1 = 6;
+        }
+        else if (hoodMath.getDistanceFromAprilTag() > 1.81) {
+            velocity += 10;
+           // System.out.println("FASTER!!!!!!!!!!!");
+        }
+
         flywheelMotor.setControl(flywheel_request.withVelocity(velocity).withFeedForward(0.5));
     }
     
@@ -263,7 +276,7 @@ public class TurretSubsystem extends SubsystemBase {
         if (updatedPosToDegrees < -1.0) updatedPosToDegrees = -1.0;
 
         setHoodAngle(updatedPosToDegrees);
-        System.out.println("current: " + (currentPos / TurretConstants.HOOD_ANGLE_RATIO) + ", updated: " + (updatedPos / TurretConstants.HOOD_ANGLE_RATIO));
+        //System.out.println("current: " + (currentPos / TurretConstants.HOOD_ANGLE_RATIO) + ", updated: " + (updatedPos / TurretConstants.HOOD_ANGLE_RATIO));
     }
 
     public void resetHoodEncoder() {
@@ -282,6 +295,10 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     /* COMMANDS */
+
+    public Command setTurretPositionCommand(double pos) {
+        return this.run(() -> this.setTurretPosition(pos));
+    }
 
     public Command aimTurretCommand() {
         // for pose estimator -> takes a Rotation2d and uses SwerveSubsystem angleToHub()

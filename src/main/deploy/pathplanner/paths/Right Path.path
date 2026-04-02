@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4,
-        "y": 5.5
+        "x": 2.5,
+        "y": 4.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.383891682961014,
-        "y": 6.00561633722575
+        "x": 2.4838916829610143,
+        "y": 4.50561633722575
       },
       "isLocked": false,
       "linkedName": "Center Start Pos"

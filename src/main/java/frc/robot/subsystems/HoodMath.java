@@ -23,7 +23,7 @@ public class HoodMath extends SubsystemBase { // the best file name in existence
     double distanceToAprilTag = 0.0;
 
     private final double ANGLE_LOWER_BOUND = 12.0; // not detected from close up
-    private final double ANGLE_UPPER_BOUND = 24.375; // when apriltag not detected from afar
+    private final double ANGLE_UPPER_BOUND = 32.6; // when apriltag not detected from afar
 
     public enum FieldZone {
         TRENCH,
@@ -32,15 +32,14 @@ public class HoodMath extends SubsystemBase { // the best file name in existence
 
     public HoodMath() {
         limTable = NetworkTableInstance.getDefault().getTable("limelight");
-        ty = limTable.getEntry("ty");
-
+        // all in degrees
         kDistanceToAngle.put(1.0, ANGLE_LOWER_BOUND);
         kDistanceToAngle.put(1.15, 14.5);
         kDistanceToAngle.put(1.3, 15.9);
         kDistanceToAngle.put(1.5, 16.35);
         kDistanceToAngle.put(1.75, 17.1);
-        kDistanceToAngle.put(2.0, ANGLE_UPPER_BOUND); // 2.3 - 8.0 -> 1.0 - 2.0
-        kDistanceToAngle.put(3.3,39.9);
+        kDistanceToAngle.put(2.0, 24.375); // 2.3 - 8.0 -> 1.0 - 2.0
+        kDistanceToAngle.put(3.3,ANGLE_UPPER_BOUND);
         // kDistanceToAngle.put(0,0);
         SmartDashboard.putNumber("Target Distance", 0);
     }
@@ -50,9 +49,20 @@ public class HoodMath extends SubsystemBase { // the best file name in existence
         // distanceToAprilTag = (Constants.targetToGround - Constants.limelightToGround)
         // / Math.tan(ty.getDouble(0)*(Math.PI/180.0));
         double[] target = LimelightHelpers.getBotPose_TargetSpace("limelight");
-        double xOffset = target[0];
-        double zDistance = target[2];
-        distanceToAprilTag = Math.sqrt(Math.pow(xOffset, 2) + Math.pow(zDistance, 2));
+        // Protection from Crash if target has length 0
+        try {
+            double xOffset = target[0];
+            double zDistance = target[2];
+            double currentDistance = Math.sqrt(Math.pow(xOffset, 2) + Math.pow(zDistance, 2));
+            if (currentDistance > 0.5) {
+                distanceToAprilTag = currentDistance;
+                SmartDashboard.putNumber("Target Distance", getDistanceFromAprilTag());
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
 
     public boolean isAprilTagDetected() {
@@ -63,6 +73,7 @@ public class HoodMath extends SubsystemBase { // the best file name in existence
         return distanceToAprilTag;
     }
 
+    // once field localization implemented - NOT USED FOR GAINESVILLE
     public FieldZone getZone(Pose2d robotPose) {
         double x = robotPose.getX();
         double y = robotPose.getY();

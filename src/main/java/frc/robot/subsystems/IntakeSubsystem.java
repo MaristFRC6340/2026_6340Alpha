@@ -58,7 +58,7 @@ public class IntakeSubsystem extends SubsystemBase {
     // # COMMANDS
 
     public Command getSetPivotSpeed(double speed) {
-        return this.startEnd(() -> {
+        return Commands.startEnd(() -> {
             this.setPivotSpeed(speed);
         }, () -> {
             this.setPivotSpeed(0);
